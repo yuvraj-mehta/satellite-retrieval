@@ -1,0 +1,14 @@
+# Get Shit Done (GSD) Plugin Files
+.agent/
+.agents/
+.gemini/
+.gsd/
+adapters/
+docs/
+scripts/
+PROJECT_RULES.md
+GSD-STYLE.md
+model_capabilities.yaml
+data/
+venv/
+.DS_Store
