@@ -22,8 +22,10 @@ from retrieval.faiss_utils import FAISSRetriever
 from evaluation.metrics import mean_f1_at_k
 
 
-def build_modality_retriever(embeddings, metadata, embedding_dim=2048):
+def build_modality_retriever(embeddings, metadata, embedding_dim=None):
     """Build a FAISS retriever for a single modality."""
+    if embedding_dim is None:
+        embedding_dim = embeddings.shape[1]
     r = FAISSRetriever(embedding_dim=embedding_dim)
     r.add(embeddings, metadata)
     return r
