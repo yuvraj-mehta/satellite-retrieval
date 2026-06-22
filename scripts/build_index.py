@@ -47,14 +47,23 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", default="data/sen12ms-subset")
     parser.add_argument("--batch-size", type=int, default=32)
-    parser.add_argument("--output-dir", default="outputs/index")
+    parser.add_argument("--output-dir", default=None)
     parser.add_argument("--workers", type=int, default=0)
+    parser.add_argument("--checkpoint", type=str, default=None,
+                        help="Path to trained DualEncoder checkpoint (.pt). "
+                             "If not provided, uses pretrained ResNet50 baseline.")
     args = parser.parse_args()
 
     device = get_device()
     print(f"Device: {device}")
 
-    out_dir = Path(args.output_dir)
+    # Set default output directory based on checkpoint usage
+    if args.output_dir is None:
+        out_dir_path = "outputs/index_trained" if args.checkpoint else "outputs/index"
+    else:
+        out_dir_path = args.output_dir
+
+    out_dir = Path(out_dir_path)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # Load dataset
@@ -67,26 +76,40 @@ def main():
         pin_memory=(str(device) != "mps"),  # MPS doesn't support pin_memory
     )
 
-    # SAR encoder (2-ch input)
-    sar_encoder = ResNet50Encoder(in_channels=2, pretrained=True, freeze_backbone=True).to(device)
-    # Optical encoder (3-ch input)
-    opt_encoder = ResNet50Encoder(in_channels=3, pretrained=True, freeze_backbone=True).to(device)
+    if args.checkpoint:
+        from models.dual_encoder import DualEncoder
+        print(f"Loading trained DualEncoder from: {args.checkpoint}")
+        ckpt = torch.load(args.checkpoint, map_location=device)
+        emb_dim = ckpt.get("args", {}).get("embedding_dim", 512)
+        model = DualEncoder(embedding_dim=emb_dim, pretrained=False).to(device)
+        model.load_state_dict(ckpt["model_state_dict"])
+        model.eval()
+
+        sar_encode_fn = lambda x: model.encode_sar(x)
+        opt_encode_fn = lambda x: model.encode_optical(x)
+        embedding_dim = emb_dim
+    else:
+        sar_encoder = ResNet50Encoder(in_channels=2, pretrained=True, freeze_backbone=True).to(device)
+        opt_encoder = ResNet50Encoder(in_channels=3, pretrained=True, freeze_backbone=True).to(device)
+        sar_encode_fn = lambda x: sar_encoder(x)
+        opt_encode_fn = lambda x: opt_encoder(x)
+        embedding_dim = 2048
 
     # --- Extract SAR embeddings ---
     print("\n[1/2] Extracting SAR embeddings...")
     t0 = time.time()
-    sar_embs, sar_meta = extract_embeddings(sar_encoder, dataloader, device, "sar")
+    sar_embs, sar_meta = extract_embeddings(sar_encode_fn, dataloader, device, "sar")
     print(f"SAR: {sar_embs.shape} in {time.time()-t0:.1f}s")
 
     # --- Extract Optical embeddings ---
     print("\n[2/2] Extracting Optical embeddings...")
     t0 = time.time()
-    opt_embs, opt_meta = extract_embeddings(opt_encoder, dataloader, device, "optical")
+    opt_embs, opt_meta = extract_embeddings(opt_encode_fn, dataloader, device, "optical")
     print(f"Optical: {opt_embs.shape} in {time.time()-t0:.1f}s")
 
     # --- Build combined FAISS index (both modalities together) ---
     print("\nBuilding FAISS index (SAR + Optical combined)...")
-    retriever = FAISSRetriever(embedding_dim=2048)
+    retriever = FAISSRetriever(embedding_dim=embedding_dim)
     retriever.add(sar_embs, sar_meta)
     retriever.add(opt_embs, opt_meta)
     retriever.save(str(out_dir / "combined.index"), str(out_dir / "combined.meta"))
