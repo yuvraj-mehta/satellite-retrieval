@@ -20,7 +20,8 @@ from retrieval.faiss_utils import FAISSRetriever
 
 def extract_embeddings(encoder, dataloader, device, modality):
     """Extract embeddings for one modality from the full dataset."""
-    encoder.eval()
+    if hasattr(encoder, "eval"):
+        encoder.eval()
     all_embeddings = []
     all_metadata = []
 
