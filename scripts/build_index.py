@@ -80,9 +80,10 @@ def main():
     if args.checkpoint:
         from models.dual_encoder import DualEncoder
         print(f"Loading trained DualEncoder from: {args.checkpoint}")
-        ckpt = torch.load(args.checkpoint, map_location=device)
+        ckpt = torch.load(args.checkpoint, map_location=device, weights_only=False)
         emb_dim = ckpt.get("args", {}).get("embedding_dim", 512)
-        model = DualEncoder(embedding_dim=emb_dim, pretrained=False).to(device)
+        # Load without re-downloading torchgeo weights (use_torchgeo=False for inference)
+        model = DualEncoder(embedding_dim=emb_dim, pretrained=False, use_torchgeo=False).to(device)
         model.load_state_dict(ckpt["model_state_dict"])
         model.eval()
 
@@ -90,8 +91,10 @@ def main():
         opt_encode_fn = lambda x: model.encode_optical(x)
         embedding_dim = emb_dim
     else:
+        # Baseline: ImageNet ResNet50 with ChannelAdapter
+        # SAR: 2-ch, Optical: 4-ch (B4+B8+B11+B12) — matches dataset loader default
         sar_encoder = ResNet50Encoder(in_channels=2, pretrained=True, freeze_backbone=True).to(device)
-        opt_encoder = ResNet50Encoder(in_channels=3, pretrained=True, freeze_backbone=True).to(device)
+        opt_encoder = ResNet50Encoder(in_channels=4, pretrained=True, freeze_backbone=True).to(device)
         sar_encode_fn = lambda x: sar_encoder(x)
         opt_encode_fn = lambda x: opt_encoder(x)
         embedding_dim = 2048

@@ -75,15 +75,21 @@ class DualEncoder(nn.Module):
         if use_torchgeo and TORCHGEO_AVAILABLE:
             # ----------------------------------------------------------------
             # Sensor-native path — physically correct initialisations
+            # SAR:     SENTINEL1_ALL_MOCO — pretrained on dual-pol (VV+VH) Sentinel-1
+            # Optical: SENTINEL2_RGB_MOCO — pretrained on Sentinel-2 RGB bands
+            #          We use 4-ch input (B4+B8+B11+B12), so a learnable 1x1 conv
+            #          adapter is inserted before the backbone (handled in encoder.py).
             # ----------------------------------------------------------------
             from torchgeo.models import ResNet50_Weights
             print("[DualEncoder] Using torchgeo sensor-native weights:")
             self.sar_backbone = ResNet50Encoder(
-                torchgeo_weights=ResNet50_Weights.SENTINEL1_GRD_MOCO,
+                in_channels=2,   # SAR: VV + VH (matches SENTINEL1_ALL_MOCO native)
+                torchgeo_weights=ResNet50_Weights.SENTINEL1_ALL_MOCO,
                 freeze_backbone=freeze_backbone,
                 embedding_dim=2048,
             )
             self.opt_backbone = ResNet50Encoder(
+                in_channels=4,   # Optical: B4+B8+B11+B12 (4-ch → adapter → 3-ch backbone)
                 torchgeo_weights=ResNet50_Weights.SENTINEL2_RGB_MOCO,
                 freeze_backbone=freeze_backbone,
                 embedding_dim=2048,

@@ -107,17 +107,35 @@ class ResNet50Encoder(nn.Module):
                     "torchgeo is required for sensor-native weights. "
                     "Install with: pip install 'torchgeo>=0.5'"
                 )
-            in_chans = torchgeo_weights.meta.get("in_chans", in_channels)
+            native_chans = torchgeo_weights.meta.get("in_chans", in_channels)
             print(
                 f"  [Encoder] torchgeo weights: {torchgeo_weights.name} "
-                f"(in_chans={in_chans})"
+                f"(native_chans={native_chans}, input_chans={in_channels})"
             )
             backbone_model = tg_resnet50(weights=torchgeo_weights)
             # Remove final avg-pool + FC to get (B, 2048, 1, 1) features
             self.backbone = nn.Sequential(*list(backbone_model.children())[:-1])
-            # torchgeo handles input channels natively — no adapter needed
-            self.channel_adapter = nn.Identity()
-            self.in_channels = in_chans
+
+            if in_channels == native_chans:
+                # Perfect match — no adapter needed
+                self.channel_adapter = nn.Identity()
+            else:
+                # Channel mismatch (e.g. 4-ch input into 3-ch SENTINEL2_RGB_MOCO).
+                # Insert a learnable ChannelAdapter (1x1 conv) to project input
+                # channels to what the torchgeo backbone expects.
+                # This keeps ALL input channels informative while using pretrained weights.
+                self.channel_adapter = ChannelAdapter(in_channels)
+                # Override: ChannelAdapter maps to 3-ch for the torchgeo RGB backbone
+                if in_channels not in (2, 3):
+                    # Re-create adapter projecting to native_chans instead of hardcoded 3
+                    self.channel_adapter = nn.Sequential(
+                        nn.Conv2d(in_channels, native_chans, kernel_size=1, bias=False)
+                    )
+                print(
+                    f"  [Encoder] Channel adapter: {in_channels}→{native_chans} "
+                    f"(learnable 1x1 conv)"
+                )
+            self.in_channels = in_channels
         else:
             # ----------------------------------------------------------------
             # Path 2: ImageNet pretrained (fallback)
