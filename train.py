@@ -7,6 +7,9 @@ Usage:
 
 For HP Victus (CUDA):
     python train.py --epochs 50 --batch-size 32 --accum-steps 2
+
+Scheduler: Linear warmup (--warmup-epochs) then CosineAnnealingLR.
+This prevents destroying pretrained features before the projection head stabilises.
 """
 import argparse
 import time
@@ -15,6 +18,7 @@ from pathlib import Path
 
 import torch
 from torch.utils.data import DataLoader, random_split
+from torch.optim.lr_scheduler import LinearLR, CosineAnnealingLR, SequentialLR
 
 from datasets.sen12ms_dataset import SEN12MSDataset
 from models.dual_encoder import DualEncoder, InfoNCELoss
@@ -66,8 +70,11 @@ def main():
     parser.add_argument("--accum-steps", type=int, default=4,
                         help="Gradient accumulation steps (effective_bs = bs * accum)")
     parser.add_argument("--lr", type=float, default=1e-4)
+    parser.add_argument("--warmup-epochs", type=int, default=5,
+                        help="Linear LR warmup epochs before cosine decay")
     parser.add_argument("--embedding-dim", type=int, default=512)
-    parser.add_argument("--temperature", type=float, default=0.07)
+    parser.add_argument("--temperature", type=float, default=0.1,
+                        help="InfoNCE temperature (0.1 recommended for batch<=64)")
     parser.add_argument("--workers", type=int, default=0)
     parser.add_argument("--output-dir", default="outputs/checkpoints")
     parser.add_argument("--val-split", type=float, default=0.1)
@@ -98,7 +105,23 @@ def main():
                         freeze_backbone=False).to(device)
     criterion = InfoNCELoss(temperature=args.temperature)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
+
+    # LR schedule: linear warmup then cosine annealing
+    # Warmup prevents destroying pretrained features before projection head stabilises.
+    warmup_scheduler = LinearLR(
+        optimizer, start_factor=0.1, end_factor=1.0,
+        total_iters=args.warmup_epochs
+    )
+    cosine_scheduler = CosineAnnealingLR(
+        optimizer, T_max=max(1, args.epochs - args.warmup_epochs)
+    )
+    scheduler = SequentialLR(
+        optimizer,
+        schedulers=[warmup_scheduler, cosine_scheduler],
+        milestones=[args.warmup_epochs]
+    )
+    print(f"Scheduler: {args.warmup_epochs}-epoch linear warmup → cosine decay")
+    print(f"Temperature: {args.temperature}")
 
     history = {"train_loss": [], "val_loss": []}
     best_val_loss = float("inf")
@@ -113,9 +136,10 @@ def main():
         history["train_loss"].append(train_loss)
         history["val_loss"].append(val_loss)
 
+        current_lr = scheduler.get_last_lr()[0]
         print(f"Epoch {epoch:03d}/{args.epochs} | "
               f"Train: {train_loss:.4f} | Val: {val_loss:.4f} | "
-              f"Time: {time.time()-t0:.1f}s")
+              f"LR: {current_lr:.2e} | Time: {time.time()-t0:.1f}s")
 
         # Save best checkpoint
         if val_loss < best_val_loss:
@@ -127,6 +151,7 @@ def main():
                 "optimizer_state_dict": optimizer.state_dict(),
                 "val_loss": val_loss,
                 "args": vars(args),
+                "temperature": args.temperature,
             }, ckpt_path)
             print(f"  -> Saved best checkpoint (val_loss={val_loss:.4f})")
 

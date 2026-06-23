@@ -25,6 +25,9 @@ from models.encoder import ResNet50Encoder, get_device
 from retrieval.faiss_utils import FAISSRetriever
 
 
+from datasets.sen12ms_dataset import SAR_MEAN, SAR_STD, OPT_MEAN, OPT_STD
+
+
 def load_tif(path: Path, bands: List[int] = None, normalize: bool = True, modality: str = "sar") -> np.ndarray:
     with rasterio.open(path) as src:
         if bands:
@@ -35,11 +38,13 @@ def load_tif(path: Path, bands: List[int] = None, normalize: bool = True, modali
     data = data.astype(np.float32)
     if normalize:
         if modality == "sar":
-            data = np.clip(data, -25.0, 0.0)
-            data = (data + 25.0) / 25.0
+            # Z-score per band using empirical dataset stats (Phase 6)
+            for i in range(min(data.shape[0], len(SAR_MEAN))):
+                data[i] = (data[i] - SAR_MEAN[i]) / (SAR_STD[i] + 1e-6)
         else:
-            # Optical channels are co-registered and divided by 10000
-            data = np.clip(data / 10000.0, 0.0, 1.0)
+            # Z-score per band using empirical dataset stats (Phase 6)
+            for i in range(min(data.shape[0], len(OPT_MEAN))):
+                data[i] = (data[i] - OPT_MEAN[i]) / (OPT_STD[i] + 1e-6)
     return data
 
 
@@ -95,7 +100,8 @@ def main():
 
     # Load and encode query
     query_path = Path(args.query)
-    bands = None if args.query_modality == "sar" else [3, 2, 1]
+    # Default bands: SAR=all 2ch, Optical=B4+B8+B11+B12 (Phase 6 default)
+    bands = None if args.query_modality == "sar" else [3, 7, 10, 11]
     query_arr = load_tif(query_path, bands=bands, modality=args.query_modality)
     
     t0 = time.time()
@@ -130,7 +136,7 @@ def main():
     axes[0].axis("off")
 
     for i, r in enumerate(target_results):
-        r_bands = None if r["modality"] == "sar" else [3, 2, 1]
+        r_bands = None if r["modality"] == "sar" else [3, 7, 10, 11]
         r_arr = load_tif(Path(r["path"]), bands=r_bands, modality=r["modality"])
         
         if r["modality"] == "sar":

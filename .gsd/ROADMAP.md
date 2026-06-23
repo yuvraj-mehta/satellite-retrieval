@@ -1,0 +1,118 @@
+# ROADMAP.md
+
+> **Current Phase**: Phase 6 — Architectural & Scientific Hardening
+> **Milestone**: v1.1 — Scientifically Hardened Submission
+
+---
+
+## Must-Haves (from SPEC)
+
+- [x] Virtual environment and all dependencies installed
+- [x] Dataset loader correctly pairs all 1167 SAR/optical patch pairs
+- [x] Visualization confirms data quality (channels, resolution, value ranges)
+- [x] MVP retrieval pipeline (ResNet50 + FAISS) working end-to-end
+- [x] Contrastive dual-encoder trained and evaluated
+- [x] F1@5 and F1@10 metrics reported for same-modal and cross-modal retrieval
+- [x] Retrieval time < 100ms per query
+
+---
+
+## Phases
+
+### Phase 1: Dataset Loader Fix & Validation
+**Status**: ✅ Complete
+**Objective**: Fix the broken pairing logic in `SEN12MSDataset`, validate all 1167 pairs load correctly, inspect channel statistics, and visualize SAR/optical samples side-by-side. Establish solid data foundation before touching models.
+
+**Key Tasks**:
+- Rewrite `datasets/sen12ms_dataset.py` with correct path logic
+  - Pattern: `ROIs2017_winter_s1/s1_{scene}/ROIs2017_winter_s1_{scene}_p{patch}.tif`
+  - Pair by matching scene + patch ID across s1/s2 directories
+- Add normalization (SAR: dB scale → [0,1]; Optical: divide by 10000)
+- Add channel inspection and validation
+- Implement `scripts/visualize_samples.py` for side-by-side display
+- Write `scripts/verify_dataset.py` that asserts exactly 1167 pairs found
+
+**Requirements**: SPEC Goals 1, 5
+
+---
+
+### Phase 2: MVP Retrieval Pipeline (No Training)
+**Status**: ✅ Complete
+**Objective**: Build a working end-to-end retrieval pipeline using pretrained ResNet50 to extract 2048-d embeddings from both modalities, build a FAISS index, and retrieve Top-5 / Top-10 results. This validates the full pipeline before any training.
+
+**Key Tasks**:
+- Implement `models/encoder.py` — ResNet50 feature extractor (strip final FC, return 2048-d pooled features)
+- Implement `retrieval/faiss_utils.py` — build `IndexFlatIP` (cosine via L2 normalization), add/search operations
+- Implement `scripts/build_index.py` — load dataset, extract all embeddings, save index + metadata
+- Implement `scripts/retrieve.py` — query by image path, display Top-K results
+- Add channel adapter: SAR (2-ch) → replicate to 3-ch; Optical (13-ch) → select RGB bands (B4, B3, B2)
+
+**Requirements**: SPEC Goals 2, 5
+
+---
+
+### Phase 3: Evaluation Framework
+**Status**: ✅ Complete
+**Objective**: Implement rigorous evaluation metrics. Since the dataset uses geographically co-located patch pairs, ground truth is defined as: same scene+patch ID across modalities. Measure F1@5 and F1@10 for all four retrieval modes.
+
+**Key Tasks**:
+- Define ground truth: for query patch `(scene_id, patch_id)`, relevant results = same `(scene_id, patch_id)` across all modalities
+- Implement `evaluation/metrics.py` — Precision@K, Recall@K, F1@K
+- Implement `evaluation/evaluate.py` — run all 4 retrieval modes:
+  - SAR → SAR (same-modal)
+  - Optical → Optical (same-modal)
+  - SAR → Optical (cross-modal)
+  - Optical → SAR (cross-modal)
+- Generate evaluation report with all metrics + retrieval time
+
+**Requirements**: SPEC Goals 4, 5
+
+---
+
+### Phase 4: Contrastive Dual-Encoder Training
+**Status**: ✅ Complete
+**Objective**: Train a dual-encoder model with contrastive loss to learn a shared embedding space that aligns SAR and optical representations. This is the core competitive differentiator. Train on M1 for prototyping, HP Victus for full training.
+
+**Key Tasks**:
+- Implement `models/dual_encoder.py` — two ResNet50 branches (SAR encoder + Optical encoder) with shared projection head (2048→512)
+- Implement triplet loss with online hard-negative mining
+- Implement `train.py` — training loop with:
+  - MPS device support
+  - Gradient accumulation for small batches
+  - Checkpoint saving every N epochs
+  - Validation F1 tracking
+- Implement `scripts/train_contrastive.py` entry point
+
+**Requirements**: SPEC Goals 3, 4, 5
+
+---
+
+### Phase 5: Optimization & Submission Polish
+**Status**: ✅ Complete
+**Objective**: Optimize retrieval speed, improve embedding quality (optionally with DINOv2/foundation models), and produce clean submission-ready code with documentation.
+
+**Key Tasks**:
+- Benchmark retrieval time, ensure < 100ms per query
+- Try FAISS `IndexIVFFlat` or `IndexHNSW` if flat index is slow
+- Add `scripts/demo.py` — end-to-end demo: load model, query, display results
+- Write `README.md` with setup, training, evaluation instructions
+- Optional: experiment with DINOv2 or remote sensing foundation model (CROMA/Prithvi) as backbone
+- Final evaluation run with trained model — capture F1@5 and F1@10 for submission
+
+**Requirements**: SPEC Goals 4, 5
+
+---
+
+### Phase 6: Architectural & Scientific Hardening
+**Status**: 🔄 Planned
+**Objective**: Fix the architectural and scientific flaws identified in the critical evaluation:
+1. Replace ImageNet ResNet50 with torchgeo sensor-native weights (SENTINEL1_GRD_MOCO / SENTINEL2_RGB_MOCO)
+2. Give each modality its own projection head (CLIP-style, not shared)
+3. Expand optical input from 3-ch RGB to 4-ch (B4+B8+B11+B12)
+4. Fix SAR normalization to use empirical per-band mean/std instead of hardcoded [-25,0] dB
+5. Fix evaluation gallery leakage (exclude self from same-modal search)
+6. Add MRR metric, LR warmup, and corrected temperature τ=0.1
+
+**Plans**: `6/1-PLAN.md` (backbone+arch) → `6/2-PLAN.md` (data) → `6/3-PLAN.md` (eval+training)
+
+**Requirements**: SPEC Goals 3, 4, 5

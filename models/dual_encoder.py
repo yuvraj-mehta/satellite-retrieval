@@ -1,24 +1,40 @@
 """
 Dual-encoder contrastive model for cross-modal satellite image retrieval.
 
-Architecture:
-    SAR image  -> SAR Encoder (ResNet50) -> 2048-d -> Projection Head -> 512-d (L2-norm)
-    OPT image  -> OPT Encoder (ResNet50) -> 2048-d -> Projection Head -> 512-d (L2-norm)
+Architecture (CLIP-style — separate heads per modality):
+    SAR image  -> SAR Encoder (ResNet50) -> 2048-d -> SAR ProjectionHead -> 512-d (L2-norm)
+    OPT image  -> OPT Encoder (ResNet50) -> 2048-d -> OPT ProjectionHead -> 512-d (L2-norm)
 
-The projection head is SHARED between encoders to enforce alignment.
-During inference, use only the backbone + projection (no temperature scaling).
+Key design decisions:
+  - SEPARATE projection heads per modality (not shared).
+    Rationale: SAR (radar backscatter) and optical (solar reflectance) produce feature
+    distributions from fundamentally different physics. Forcing the same linear transform
+    on both (shared projector) is architecturally incorrect. CLIP, ALIGN, and all serious
+    cross-modal retrieval systems use separate per-modality projection heads.
+
+  - torchgeo sensor-native weights (when available):
+    SAR backbone: SENTINEL1_GRD_MOCO — pretrained on Sentinel-1 GRD imagery
+    OPT backbone: SENTINEL2_RGB_MOCO — pretrained on Sentinel-2 optical imagery
+    These are physically correct initialisations vs. ImageNet (natural photos).
+
+  - InfoNCE / NT-Xent contrastive loss aligns the two separate embedding spaces.
+
+During inference, use only backbone + modality-specific projection (no temperature).
 """
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from models.encoder import ResNet50Encoder
+from models.encoder import ResNet50Encoder, TORCHGEO_AVAILABLE
 
 
 class ProjectionHead(nn.Module):
     """
-    MLP projection head: 2048 -> 1024 -> 512 (L2-normalized).
+    MLP projection head: 2048 -> 1024 -> out_dim (L2-normalized).
     Follows SimCLR/CLIP-style projection for contrastive learning.
+
+    Each modality gets its OWN instance — they do not share weights.
     """
 
     def __init__(self, in_dim: int = 2048, hidden_dim: int = 1024, out_dim: int = 512):
@@ -40,8 +56,10 @@ class DualEncoder(nn.Module):
 
     Args:
         embedding_dim: Final embedding dimension after projection (default 512)
-        pretrained: Use ImageNet pretrained ResNet50 weights
-        freeze_backbone: Freeze ResNet weights initially (unfreeze for fine-tuning)
+        pretrained: Use ImageNet pretrained ResNet50 weights (ImageNet fallback path only)
+        freeze_backbone: Freeze ResNet weights initially (fine-tune later if needed)
+        use_torchgeo: Use torchgeo sensor-native weights when available (default True).
+                      Falls back to ImageNet if torchgeo not installed.
     """
 
     def __init__(
@@ -49,36 +67,63 @@ class DualEncoder(nn.Module):
         embedding_dim: int = 512,
         pretrained: bool = True,
         freeze_backbone: bool = False,
+        use_torchgeo: bool = True,
     ):
         super().__init__()
         self.embedding_dim = embedding_dim
 
-        # Separate backbones for SAR and optical
-        self.sar_backbone = ResNet50Encoder(
-            in_channels=2,
-            pretrained=pretrained,
-            freeze_backbone=freeze_backbone,
-            embedding_dim=2048,  # raw 2048 before projection
-        )
-        self.opt_backbone = ResNet50Encoder(
-            in_channels=3,
-            pretrained=pretrained,
-            freeze_backbone=freeze_backbone,
-            embedding_dim=2048,
-        )
+        if use_torchgeo and TORCHGEO_AVAILABLE:
+            # ----------------------------------------------------------------
+            # Sensor-native path — physically correct initialisations
+            # ----------------------------------------------------------------
+            from torchgeo.models import ResNet50_Weights
+            print("[DualEncoder] Using torchgeo sensor-native weights:")
+            self.sar_backbone = ResNet50Encoder(
+                torchgeo_weights=ResNet50_Weights.SENTINEL1_GRD_MOCO,
+                freeze_backbone=freeze_backbone,
+                embedding_dim=2048,
+            )
+            self.opt_backbone = ResNet50Encoder(
+                torchgeo_weights=ResNet50_Weights.SENTINEL2_RGB_MOCO,
+                freeze_backbone=freeze_backbone,
+                embedding_dim=2048,
+            )
+        else:
+            # ----------------------------------------------------------------
+            # ImageNet fallback — used when torchgeo not installed
+            # ----------------------------------------------------------------
+            if use_torchgeo and not TORCHGEO_AVAILABLE:
+                print("[DualEncoder] torchgeo not installed — falling back to ImageNet weights.")
+                print("  Install with: pip install 'torchgeo>=0.5'")
+            self.sar_backbone = ResNet50Encoder(
+                in_channels=2,
+                pretrained=pretrained,
+                freeze_backbone=freeze_backbone,
+                embedding_dim=2048,
+            )
+            self.opt_backbone = ResNet50Encoder(
+                in_channels=3,
+                pretrained=pretrained,
+                freeze_backbone=freeze_backbone,
+                embedding_dim=2048,
+            )
 
-        # Shared projection head — cross-modal alignment
-        self.projector = ProjectionHead(2048, 1024, embedding_dim)
+        # ----------------------------------------------------------------
+        # CLIP-style SEPARATE projection heads (one per modality)
+        # This is the architecturally correct design — not a shared head.
+        # ----------------------------------------------------------------
+        self.sar_projector = ProjectionHead(2048, 1024, embedding_dim)
+        self.opt_projector = ProjectionHead(2048, 1024, embedding_dim)
 
     def encode_sar(self, x):
-        """Encode SAR images to normalized embeddings."""
-        feat = self.sar_backbone(x)   # (B, 2048) already L2-normalized by backbone
-        return self.projector(feat)   # (B, 512) L2-normalized
+        """Encode SAR images to normalized embeddings using SAR-specific projector."""
+        feat = self.sar_backbone(x)      # (B, 2048) L2-normalized by backbone
+        return self.sar_projector(feat)  # (B, embedding_dim) L2-normalized
 
     def encode_optical(self, x):
-        """Encode optical images to normalized embeddings."""
-        feat = self.opt_backbone(x)   # (B, 2048)
-        return self.projector(feat)   # (B, 512)
+        """Encode optical images to normalized embeddings using optical-specific projector."""
+        feat = self.opt_backbone(x)      # (B, 2048)
+        return self.opt_projector(feat)  # (B, embedding_dim)
 
     def forward(self, sar, optical):
         """
@@ -96,10 +141,12 @@ class InfoNCELoss(nn.Module):
     All other combinations are negatives.
 
     Args:
-        temperature: Softmax temperature (lower = harder, default 0.07)
+        temperature: Softmax temperature. Default 0.1 (recommended for batch≤64).
+                     Note: 0.07 from SimCLR is calibrated for very large batches (4096+).
+                     For effective batch size ~32, 0.1 is more appropriate.
     """
 
-    def __init__(self, temperature: float = 0.07):
+    def __init__(self, temperature: float = 0.1):
         super().__init__()
         self.temperature = temperature
 
@@ -121,7 +168,7 @@ class InfoNCELoss(nn.Module):
         # Labels: positive pair is (i, i)
         labels = torch.arange(B, device=device)
 
-        # Cross entropy in both directions
+        # Cross entropy in both directions (bidirectional InfoNCE)
         loss_sar_to_opt = F.cross_entropy(sim, labels)
         loss_opt_to_sar = F.cross_entropy(sim.T, labels)
 
@@ -134,19 +181,27 @@ if __name__ == "__main__":
 
     device = get_device()
     print(f"Device: {device}")
+    print(f"torchgeo available: {TORCHGEO_AVAILABLE}")
 
-    model = DualEncoder(embedding_dim=512, pretrained=False).to(device)
+    model = DualEncoder(embedding_dim=512, use_torchgeo=True).to(device)
 
-    sar = torch.randn(4, 2, 256, 256).to(device)
-    opt = torch.randn(4, 3, 256, 256).to(device)
+    sar = torch.randn(4, 2, 64, 64).to(device)
+    opt = torch.randn(4, 3, 64, 64).to(device)
 
     sar_emb, opt_emb = model(sar, opt)
-    print(f"SAR emb: {sar_emb.shape}")     # (4, 512)
-    print(f"OPT emb: {opt_emb.shape}")     # (4, 512)
-    print(f"SAR norms: {sar_emb.norm(dim=1)}")  # all 1.0
+    print(f"\nSAR emb shape:  {sar_emb.shape}")     # (4, 512)
+    print(f"OPT emb shape:  {opt_emb.shape}")     # (4, 512)
+    print(f"SAR norms: {sar_emb.norm(dim=1)}")    # all 1.0
+    print(f"OPT norms: {opt_emb.norm(dim=1)}")    # all 1.0
 
-    criterion = InfoNCELoss(temperature=0.07)
+    # Verify separate (non-shared) projection heads
+    sar_param_ids = {id(p) for p in model.sar_projector.parameters()}
+    opt_param_ids = {id(p) for p in model.opt_projector.parameters()}
+    assert sar_param_ids.isdisjoint(opt_param_ids), "ERROR: Projectors share parameters!"
+    print("\nPASS: sar_projector and opt_projector have disjoint parameters (CLIP-style)")
+
+    criterion = InfoNCELoss(temperature=0.1)
     loss = criterion(sar_emb, opt_emb)
-    print(f"InfoNCE loss: {loss.item():.4f}")  # should be ~log(4)≈1.39
+    print(f"InfoNCE loss: {loss.item():.4f}")
     assert not torch.isnan(loss), "Loss is NaN!"
     print("PASS: DualEncoder + InfoNCELoss working")
