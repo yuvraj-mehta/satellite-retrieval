@@ -13,7 +13,7 @@ if str(backend_dir) not in sys.path:
 from models.dual_encoder import DualEncoder
 from models.encoder import get_device
 from retrieval.faiss_utils import FAISSRetriever
-from datasets.sen12ms_dataset import SAR_MEAN, SAR_STD, OPT_MEAN, OPT_STD
+from datasets.sen12ms_dataset import SAR_MEAN, SAR_STD, OPT_MEAN, OPT_STD, OPT_RGB_MEAN, OPT_RGB_STD
 
 
 def load_tif(path: Path, bands: List[int] = None, normalize: bool = True, modality: str = "sar") -> np.ndarray:
@@ -29,6 +29,10 @@ def load_tif(path: Path, bands: List[int] = None, normalize: bool = True, modali
             # Z-score per band using empirical dataset stats
             for i in range(min(data.shape[0], len(SAR_MEAN))):
                 data[i] = (data[i] - SAR_MEAN[i]) / (SAR_STD[i] + 1e-6)
+        elif modality == "optical_rgb":
+            # Z-score per band using empirical dataset stats for RGB
+            for i in range(min(data.shape[0], len(OPT_RGB_MEAN))):
+                data[i] = (data[i] - OPT_RGB_MEAN[i]) / (OPT_RGB_STD[i] + 1e-6)
         else:
             # Z-score per band using empirical dataset stats
             for i in range(min(data.shape[0], len(OPT_MEAN))):
@@ -91,6 +95,8 @@ class RetrieverService:
         with torch.no_grad():
             if modality == "sar":
                 emb = self.model.encode_sar(tensor)
+            elif modality == "optical_rgb":
+                emb = self.model.encode_optical_rgb(tensor)
             else:
                 emb = self.model.encode_optical(tensor)
         return emb.cpu().float().numpy()
@@ -101,8 +107,9 @@ class RetrieverService:
         
         # Filter to target modality
         filtered = []
+        target_mod = "optical" if target_modality == "optical_rgb" else target_modality
         for r in raw_results[0]:
-            if r["modality"] == target_modality:
+            if r["modality"] == target_mod:
                 filtered.append(r)
                 if len(filtered) == k:
                     break

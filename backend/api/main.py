@@ -17,6 +17,7 @@ if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
 
 from api.retriever import RetrieverService, load_tif
+from datasets.sen12ms_dataset import OPT_RGB_BANDS
 from api.benchmark import router as benchmark_router
 
 
@@ -111,10 +112,11 @@ async def query(
     query_modality = query_modality.lower()
     target_modality = target_modality.lower()
 
-    if query_modality not in ["sar", "optical"]:
-        raise HTTPException(status_code=400, detail="Invalid query_modality. Must be 'sar' or 'optical'.")
-    if target_modality not in ["sar", "optical"]:
-        raise HTTPException(status_code=400, detail="Invalid target_modality. Must be 'sar' or 'optical'.")
+    valid_modalities = ["sar", "optical", "optical_rgb"]
+    if query_modality not in valid_modalities:
+        raise HTTPException(status_code=400, detail=f"Invalid query_modality. Must be one of {valid_modalities}.")
+    if target_modality not in valid_modalities:
+        raise HTTPException(status_code=400, detail=f"Invalid target_modality. Must be one of {valid_modalities}.")
 
     # Save uploaded file to temp file
     suffix = Path(file.filename).suffix
@@ -130,14 +132,18 @@ async def query(
         with rasterio.open(tmp_path) as src:
             num_bands = src.count
 
-        if query_modality == "optical" and num_bands < 4:
-            raise HTTPException(status_code=400, detail=f"Modality mismatch: You selected Optical (Sentinel-2) which requires at least 4 bands, but the uploaded image has {num_bands} band(s). If you uploaded a PNG/JPG, note that the engine requires raw multi-spectral .tif files.")
+        if query_modality in ["optical", "optical_rgb"] and num_bands < 4:
+            raise HTTPException(status_code=400, detail=f"Modality mismatch: You selected {query_modality.upper()} which requires at least 4 bands, but the uploaded image has {num_bands} band(s). If you uploaded a SAR image, please change the Query Modality.")
         elif query_modality == "sar" and num_bands > 2:
             raise HTTPException(status_code=400, detail=f"Modality mismatch: You selected SAR (Sentinel-1) which expects 2 bands, but the uploaded image has {num_bands} bands. If you uploaded an Optical image, please change the Query Modality.")
 
         # Load and normalize query image
-        # S1: all bands; S2: B4, B8, B11, B12 (indices 3, 7, 10, 11)
-        bands = None if query_modality == "sar" else [3, 7, 10, 11]
+        if query_modality == "sar":
+            bands = None
+        elif query_modality == "optical_rgb":
+            bands = OPT_RGB_BANDS
+        else:
+            bands = [3, 7, 10, 11]
         query_arr = load_tif(tmp_path, bands=bands, modality=query_modality)
         
         # Track query patch_id
@@ -171,12 +177,15 @@ async def query(
             # Check match status
             is_match = (query_patch_id is not None and str(r["patch_id"]) == str(query_patch_id))
 
+            # If target modality was optical_rgb, set modality in response to optical_rgb
+            res_modality = "optical_rgb" if target_modality == "optical_rgb" and r["modality"] == "optical" else r["modality"]
+
             response_results.append({
                 "rank": len(response_results) + 1,
                 "scene_id": r["scene_id"],
                 "patch_id": r["patch_id"],
                 "score": float(r["score"]),
-                "modality": r["modality"],
+                "modality": res_modality,
                 "image": r_b64,
                 "is_match": is_match
             })
