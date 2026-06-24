@@ -60,13 +60,31 @@ export default function UploadPanel({
 
   const handleQueryModalityChange = (e) => {
     const newQueryMod = e.target.value;
-    const newTargetMod = newQueryMod === "sar" ? "optical" : "sar";
+    let newTargetMod = targetModality;
+    if (newQueryMod === "sar") {
+      if (targetModality === "sar") {
+        newTargetMod = "optical";
+      }
+    } else {
+      if (targetModality === "optical" || targetModality === "optical_rgb") {
+        newTargetMod = "sar";
+      }
+    }
     onModalityChange(newQueryMod, newTargetMod);
   };
 
   const handleTargetModalityChange = (e) => {
     const newTargetMod = e.target.value;
-    const newQueryMod = newTargetMod === "sar" ? "optical" : "sar";
+    let newQueryMod = queryModality;
+    if (newTargetMod === "sar") {
+      if (queryModality === "sar") {
+        newQueryMod = "optical";
+      }
+    } else {
+      if (queryModality === "optical" || queryModality === "optical_rgb") {
+        newQueryMod = "sar";
+      }
+    }
     onModalityChange(newQueryMod, newTargetMod);
   };
 
@@ -140,6 +158,7 @@ export default function UploadPanel({
           >
             <option value="sar">Sentinel-1 (SAR)</option>
             <option value="optical">Sentinel-2 (Optical)</option>
+            <option value="optical_rgb">Optical RGB (Sentinel-2 True Colour)</option>
           </select>
         </div>
 
@@ -151,6 +170,7 @@ export default function UploadPanel({
             className="modality-select"
           >
             <option value="optical">Sentinel-2 (Optical)</option>
+            <option value="optical_rgb">Optical RGB (Sentinel-2 True Colour)</option>
             <option value="sar">Sentinel-1 (SAR)</option>
           </select>
         </div>
