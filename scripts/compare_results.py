@@ -70,6 +70,26 @@ def main():
                 sign = "+" if delta >= 0 else ""
                 print(f"{mode:<20} F1@{k}: {base_f1:.4f} -> {train_f1:.4f} ({sign}{delta:.4f})")
 
+    # ADD AFTER THE F1 LOOP:
+    print()
+    print("MRR (Mean Reciprocal Rank):")
+    for mode in modes:
+        if "mrr" in baseline.get(mode, {}) and "mrr" in trained.get(mode, {}):
+            base_mrr = baseline[mode]["mrr"]
+            train_mrr = trained[mode]["mrr"]
+            delta = train_mrr - base_mrr
+            sign = "+" if delta >= 0 else ""
+            print(f"  {mode:<20} MRR: {base_mrr:.4f} -> {train_mrr:.4f} ({sign}{delta:.4f})")
+
+    # KEY HEADLINE NUMBERS
+    print()
+    print("=" * 70)
+    cross_f1_trained = trained.get("SAR -> OPT", {}).get("mean_f1@5", 0)
+    cross_mrr_trained = trained.get("SAR -> OPT", {}).get("mrr", 0)
+    print(f"HEADLINE: Cross-modal SAR->OPT | F1@5={cross_f1_trained:.4f} | MRR={cross_mrr_trained:.4f}")
+    print(f"          (F1@5 ceiling = 0.3333 for 1 ground truth per query)")
+    print("=" * 70)
+
 
 if __name__ == "__main__":
     main()
