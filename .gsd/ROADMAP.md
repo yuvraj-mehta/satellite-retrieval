@@ -1,7 +1,7 @@
 # ROADMAP.md
 
-> **Current Phase**: Phase 6 — Architectural & Scientific Hardening
-> **Milestone**: v1.1 — Scientifically Hardened Submission
+> **Current Phase**: Completed 🎉
+> **Milestone**: v1.1 — Scientifically Hardened Submission (COMPLETE ✅)
 
 ---
 
@@ -104,7 +104,7 @@
 ---
 
 ### Phase 6: Architectural & Scientific Hardening
-**Status**: 🔄 Planned
+**Status**: ✅ Complete
 **Objective**: Fix the architectural and scientific flaws identified in the critical evaluation:
 1. Replace ImageNet ResNet50 with torchgeo sensor-native weights (SENTINEL1_GRD_MOCO / SENTINEL2_RGB_MOCO)
 2. Give each modality its own projection head (CLIP-style, not shared)

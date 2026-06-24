@@ -82,8 +82,8 @@ def main():
         print(f"Loading trained DualEncoder from: {args.checkpoint}")
         ckpt = torch.load(args.checkpoint, map_location=device, weights_only=False)
         emb_dim = ckpt.get("args", {}).get("embedding_dim", 512)
-        # Load without re-downloading torchgeo weights (use_torchgeo=False for inference)
-        model = DualEncoder(embedding_dim=emb_dim, pretrained=False, use_torchgeo=False).to(device)
+        # Load with use_torchgeo=True so the architecture matches the checkpoint
+        model = DualEncoder(embedding_dim=emb_dim, pretrained=False, use_torchgeo=True).to(device)
         model.load_state_dict(ckpt["model_state_dict"])
         model.eval()
 
