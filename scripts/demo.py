@@ -115,8 +115,14 @@ def main():
     print(f"Query modality: {args.query_modality} -> Target: {args.target_modality}")
     print(f"Retrieval time: {elapsed_ms:.2f}ms")
     print(f"\nTop-{args.k} results:")
-    for r in target_results:
-        print(f"  Rank {r['rank']}: Scene {r['scene_id']}, Patch {r['patch_id']}, Score (similarity): {r['score']:.4f}")
+    
+    import re
+    _q_match = re.search(r"_p(\d+)\.tif$", args.query)
+    query_patch_id = _q_match.group(1) if _q_match else None
+
+    for local_rank, r in enumerate(target_results, start=1):
+        match = " ✓ MATCH" if (query_patch_id and r["patch_id"] == query_patch_id) else ""
+        print(f"  Rank {local_rank}: Scene {r['scene_id']}, Patch {r['patch_id']}, Score (similarity): {r['score']:.4f}{match}")
 
     # Visualize
     fig, axes = plt.subplots(1, args.k + 1, figsize=(4 * (args.k + 1), 4))
