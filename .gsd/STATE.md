@@ -1,22 +1,21 @@
 # STATE.md — Project Memory
 
-> Last Updated: 2026-06-24
-> Session: Phase 7 complete — Milestone v1.2 Complete 🎉
+> Last Updated: 2026-06-25
+> Session: Phase 8 planned — React UI
 
 ## Current Position
-- **Phase**: 7 (verified)
-- **Status**: ✅ Complete and verified
+- **Phase**: 8 (planned, ready for execution)
+- **Status**: 🔲 Plans written — awaiting `/execute 8`
 
-## Last Session Summary
-Phase 7 executed successfully. 2 plans, 4 tasks completed.
-- Disabled leave-one-out self-filtering in `evaluation/evaluate.py` same-modal evaluation to correctly count self-matches as ground truths per geographic correspondence.
-- Re-evaluated both indexes: same-modal F1@5 increased to 0.3333, trained cross-modal F1@5 reached 0.3008, MRR reached 0.7063.
-- Modified `scripts/demo.py` to display local modality-specific rank (1..5) instead of global combined rank, and marked query match with `✓ MATCH`.
-- Extended `scripts/compare_results.py` to compare MRR metrics across all retrieval modes and output a clean `HEADLINE:` block.
-- Updated `README.md` title, system description, installation instructions with `torchgeo`, and both evaluation metrics tables with correct v1.1 numbers.
+## Phase 8 Plans
+| Plan | Focus | Wave |
+|------|-------|------|
+| `8/1-PLAN.md` | FastAPI backend (`api/main.py`) wrapping DualEncoder + FAISS as REST API | 1 |
+| `8/2-PLAN.md` | React (Vite) scaffold + drag-and-drop upload + query hook | 2 |
+| `8/3-PLAN.md` | ResultsGrid, ImageTile, score bars, match badges, loading state, polish | 3 |
 
 ## Next Steps
-1. Submit the repository for the ISRO/Bharatiya Antariksh Hackathon!
+1. `/execute 8` — implement the React UI
 
 ## Phase 6 Plans
 | Plan | Focus | Wave |

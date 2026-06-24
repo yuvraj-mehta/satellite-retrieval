@@ -121,6 +121,21 @@
 
 ### Phase 7: Submission Fixes & Polish
 **Status**: ✅ Complete
+
+---
+
+### Phase 8: React UI
+**Status**: 🔲 Planned
+**Objective**: Build a full-stack interactive web UI for the retrieval system. A FastAPI backend exposes the trained model as a REST API. A React (Vite) frontend lets users upload a query `.tif` image, select query/target modalities, view the Top-5 retrieved results as rendered satellite image tiles with similarity scores and match badges.
+
+**Key Tasks**:
+- Implement `api/main.py` — FastAPI server exposing `/query` (POST) and `/health` (GET) endpoints
+- Scaffold React app (`ui/`) using Vite — file upload, modality selectors, results grid
+- Build results display — render SAR (grayscale VV band) and optical (RGB composite) tiles with rank badges and similarity scores
+
+**Plans**: `8/1-PLAN.md` (FastAPI backend) → `8/2-PLAN.md` (React scaffold + upload) → `8/3-PLAN.md` (results display + polish)
+
+**Requirements**: SPEC Goals 5 (clean, presentable code)
 **Objective**: Fix two issues that make the system appear broken to hackathon judges:
 1. Same-modal F1 shows 0.000 due to incorrect leave-one-out evaluation — judges will see zeros on two of five evaluation criteria.
 2. README metrics are stale (Phase 4 numbers, not v1.1); demo shows misleading global ranks.
