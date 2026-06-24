@@ -122,6 +122,48 @@ def mean_reciprocal_rank(
     return float(np.mean(rrs)) if rrs else 0.0
 
 
+def mean_semantic_f1_at_k(
+    queries: List[Dict[str, Any]],
+    results: List[List[Dict[str, Any]]],
+    k: int,
+    target_modality: str,
+    lc_labels: Dict[str, int],
+) -> Dict[str, float]:
+    """
+    Compute mean semantic F1@K across queries.
+    Two patches are relevant if they share the same Land Cover (LC) class.
+    """
+    f1s, precs, recs = [], [], []
+
+    for query, result_list in zip(queries, results):
+        query_key = f"{query['scene_id']}_{query['patch_id']}"
+        query_lc_class = lc_labels.get(query_key)
+        if query_lc_class is None:
+            continue
+
+        relevant = set()
+        for r in result_list:
+            r_key = f"{r['scene_id']}_{r['patch_id']}"
+            if lc_labels.get(r_key) == query_lc_class:
+                relevant.add(f"{r['modality']}_{r['scene_id']}_{r['patch_id']}")
+
+        retrieved_ids = [
+            f"{r['modality']}_{r['scene_id']}_{r['patch_id']}"
+            for r in result_list
+        ]
+
+        f1s.append(f1_at_k(retrieved_ids, relevant, k))
+        precs.append(precision_at_k(retrieved_ids, relevant, k))
+        recs.append(recall_at_k(retrieved_ids, relevant, k))
+
+    return {
+        f"semantic_mean_f1@{k}": float(np.mean(f1s)) if f1s else 0.0,
+        f"semantic_mean_precision@{k}": float(np.mean(precs)) if precs else 0.0,
+        f"semantic_mean_recall@{k}": float(np.mean(recs)) if recs else 0.0,
+        f"semantic_std_f1@{k}": float(np.std(f1s)) if f1s else 0.0,
+    }
+
+
 if __name__ == "__main__":
     print("Running metrics unit tests...")
 
@@ -158,5 +200,16 @@ if __name__ == "__main__":
     mrr = mean_reciprocal_rank(queries, results_miss, "optical")
     assert mrr == 0.0, f"MRR miss test failed: {mrr}"
     print(f"PASS MRR (miss): {mrr:.4f}")
+
+    # Test 5: Semantic F1@K
+    q_sem = [{'scene_id': '21', 'patch_id': '100', 'modality': 'sar'}]
+    res_sem = [[
+        {'modality': 'optical', 'scene_id': '21', 'patch_id': '200', 'score': 0.9},
+        {'modality': 'optical', 'scene_id': '21', 'patch_id': '300', 'score': 0.8},
+    ]]
+    lc_sem = {'21_100': 9, '21_200': 9, '21_300': 12}
+    out_sem = mean_semantic_f1_at_k(q_sem, res_sem, k=2, target_modality='optical', lc_labels=lc_sem)
+    assert out_sem['semantic_mean_f1@2'] > 0, out_sem
+    print(f"PASS semantic_mean_f1_at_k: {out_sem['semantic_mean_f1@2']:.4f}")
 
     print("\nAll metrics unit tests PASSED.")
