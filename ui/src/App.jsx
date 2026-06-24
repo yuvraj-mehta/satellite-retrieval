@@ -6,11 +6,13 @@ import ResultsGrid from "./components/ResultsGrid";
 import LoadingOverlay from "./components/LoadingOverlay";
 import ArchitectureDiagram from "./components/ArchitectureDiagram";
 import ErrorBanner from "./components/ErrorBanner";
+import BenchmarkDashboard from "./components/BenchmarkDashboard";
 
 export default function App() {
   const [queryModality, setQueryModality] = useState("sar");
   const [targetModality, setTargetModality] = useState("optical");
   const [topK, setTopK] = useState(5);
+  const [activeTab, setActiveTab] = useState("retrieval");
 
   const {
     results,
@@ -43,34 +45,58 @@ export default function App() {
         hasResults={results.length > 0} 
       />
 
-      <ArchitectureDiagram />
+      <div className="tab-bar">
+        <button
+          id="tab-retrieval"
+          className={activeTab === "retrieval" ? "tab active" : "tab"}
+          onClick={() => setActiveTab("retrieval")}
+        >
+          🛰 Retrieval
+        </button>
+        <button
+          id="tab-benchmarks"
+          className={activeTab === "benchmarks" ? "tab active" : "tab"}
+          onClick={() => setActiveTab("benchmarks")}
+        >
+          📊 Benchmarks
+        </button>
+      </div>
 
-      <UploadPanel
-        onSearch={handleSearch}
-        loading={loading}
-        queryModality={queryModality}
-        targetModality={targetModality}
-        topK={topK}
-        onModalityChange={(qm, tm) => {
-          setQueryModality(qm);
-          setTargetModality(tm);
-        }}
-        onTopKChange={(k) => setTopK(k)}
-      />
+      {activeTab === "retrieval" && (
+        <>
+          <ArchitectureDiagram />
 
-      {loading && <LoadingOverlay />}
-      <ErrorBanner error={error} />
+          <UploadPanel
+            onSearch={handleSearch}
+            loading={loading}
+            queryModality={queryModality}
+            targetModality={targetModality}
+            topK={topK}
+            onModalityChange={(qm, tm) => {
+              setQueryModality(qm);
+              setTargetModality(tm);
+            }}
+            onTopKChange={(k) => setTopK(k)}
+          />
 
-      {results.length > 0 && !loading && (
-        <ResultsGrid
-          queryImage={queryImage}
-          results={results}
-          queryModality={queryModality}
-          targetModality={targetModality}
-          retrievalMs={retrievalMs}
-        />
+          {loading && <LoadingOverlay />}
+          <ErrorBanner error={error} />
+
+          {results.length > 0 && !loading && (
+            <ResultsGrid
+              queryImage={queryImage}
+              results={results}
+              queryModality={queryModality}
+              targetModality={targetModality}
+              retrievalMs={retrievalMs}
+            />
+          )}
+        </>
       )}
+
+      {activeTab === "benchmarks" && <BenchmarkDashboard />}
     </div>
   );
 }
+
 
