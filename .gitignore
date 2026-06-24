@@ -3,12 +3,23 @@
 .agents/
 .gemini/
 .gsd/
-adapters/
+backend/adapters/
 docs/
-scripts/
+backend/scripts/
 PROJECT_RULES.md
 GSD-STYLE.md
-model_capabilities.yaml
-data/
+backend/model_capabilities.yaml
+backend/data/
 venv/
 .DS_Store
+
+# Backend python cache/builds
+backend/**/__pycache__/
+backend/**/*.pyc
+
+# Frontend React App (Vite)
+ui/node_modules/
+ui/dist/
+ui/dist-ssr/
+ui/*.local
+ui/.eslintcache
