@@ -4,22 +4,21 @@
 > Session: Phases 9–12 planned (Evaluation Dashboard, Semantic Eval, 3-Modality, Hard Neg Mining)
 
 ## Current Position
-- **Phase**: 9 — Evaluation Dashboard UI
-- **Status**: 🔄 Plans written — ready for /execute 9
+- **Phase**: 10 — Semantic Evaluation (LC Labels)
+- **Status**: 🔄 Plans written — ready for /execute 10
 
 ## Phase 9–12 Plans
 | Phase | Name | Plans | Wave |
 |-------|------|-------|------|
-| 9  | Evaluation Dashboard UI | `9/1-PLAN.md` (backend router), `9/2-PLAN.md` (React dashboard + tabs) | 1→2 |
+| 9  | Evaluation Dashboard UI | `9/1-PLAN.md` (backend router), `9/2-PLAN.md` (React dashboard + tabs) | ✅ Complete |
 | 10 | Semantic Evaluation (LC Labels) | `10/1-PLAN.md` (LC index + metrics.py), `10/2-PLAN.md` (evaluate.py + UI update) | 1→2 |
 | 11 | Three-Modality Support | `11/1-PLAN.md` (dataset + encoder), `11/2-PLAN.md` (API + UI dropdown) | 1→2 |
 | 12 | Hard Negative Mining | `12/1-PLAN.md` (dataset + loss), `12/2-PLAN.md` (train.py flag) | 1→2 |
 
 ## Next Steps
-1. `/execute 9` — run Phase 9 plans (no retraining, immediate judge impact)
-2. `/execute 10` — run Phase 10 plans (needs LC labels — already available)
-3. `/execute 11` — run Phase 11 plans (no retraining needed — Option A shared encoder)
-4. `/execute 12` — run Phase 12 plans, then retrain the model (~2hr on GPU)
+1. `/execute 10` — run Phase 10 plans (needs LC labels — already available)
+2. `/execute 11` — run Phase 11 plans (no retraining needed — Option A shared encoder)
+3. `/execute 12` — run Phase 12 plans, then retrain the model (~2hr on GPU)
 
 
 ## Phase 6 Plans

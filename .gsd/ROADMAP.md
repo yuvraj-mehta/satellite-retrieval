@@ -1,6 +1,6 @@
 # ROADMAP.md
 
-> **Current Phase**: Phase 9 — Evaluation Dashboard UI
+> **Current Phase**: Phase 10 — Semantic Evaluation (Land Cover Labels)
 > **Milestone**: v1.3 — Hackathon Finalist Polish
 
 ---
@@ -147,7 +147,7 @@
 ---
 
 ### Phase 9: Evaluation Dashboard UI
-**Status**: 🔄 In Progress
+**Status**: ✅ Complete
 **Objective**: Surface the existing `evaluation_results.json` benchmark data directly in the React UI so judges see empirical F1@5, F1@10, MRR, and latency metrics front-and-center instead of buried in backend JSON files. Add a `/benchmarks` API endpoint and a `BenchmarkDashboard` tab component with inline SVG charts and a glassmorphism aesthetic matching the existing UI.
 
 **Key Tasks**:
