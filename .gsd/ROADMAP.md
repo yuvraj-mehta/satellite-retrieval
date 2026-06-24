@@ -1,6 +1,6 @@
 # ROADMAP.md
 
-> **Current Phase**: Phase 12 — Hard Negative Mining
+> **Current Phase**: Complete 🎉
 > **Milestone**: v1.3 — Hackathon Finalist Polish
 
 ---
@@ -195,7 +195,7 @@
 ---
 
 ### Phase 12: Hard Negative Mining
-**Status**: ⬜ Planned
+**Status**: ✅ Complete
 **Objective**: Upgrade the training loop so the InfoNCE loss is computed against hard negatives — patches from different geographic locations that share the same LC class (e.g., Forest A vs Forest B). This forces the model to learn a discriminative embedding space within semantic classes, not just across obviously different biomes. Requires Phase 10 LC labels as a prerequisite. Requires a full model retrain after implementation.
 
 **Key Tasks**:
