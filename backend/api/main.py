@@ -17,9 +17,11 @@ if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
 
 from api.retriever import RetrieverService, load_tif
+from api.benchmark import router as benchmark_router
 
 
 app = FastAPI(title="Satellite Image Retrieval API")
+app.include_router(benchmark_router)
 
 # Configure CORS
 app.add_middleware(
