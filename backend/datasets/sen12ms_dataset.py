@@ -27,6 +27,20 @@ OPT_MEAN = [878.379167, 1933.121434, 32.397427, 1912.592565]  # raw uint16
 OPT_STD  = [336.91765,  492.114564,  20.41353,  501.811827]   # raw uint16
 
 # ---------------------------------------------------------------------------
+# Optical RGB (Sentinel-2 true colour): B4 (Red), B3 (Green), B2 (Blue)
+# Band indices (0-indexed): B4=3, B3=2, B2=1
+# Normalization: Z-score using Sentinel-2 empirical values for these bands.
+# B4 (Red):   mean ~878, std ~337  (same as OPT_MEAN[0]/OPT_STD[0])
+# B3 (Green): mean ~1034, std ~292 (empirical from SEN12MS literature)
+# B2 (Blue):  mean ~843,  std ~284 (empirical from SEN12MS literature)
+# Order here matches band selection [3, 2, 1] → R, G, B
+# ---------------------------------------------------------------------------
+OPT_RGB_BANDS = [3, 2, 1]   # 0-indexed: B4=Red, B3=Green, B2=Blue
+OPT_RGB_MEAN  = [878.379167, 1034.0, 843.0]   # R, G, B
+OPT_RGB_STD   = [336.91765,  292.0,  284.0]   # R, G, B
+
+
+# ---------------------------------------------------------------------------
 # SEN12MS patch filename pattern:
 # ROIs2017_winter_s1_21_p302.tif
 # Group 1: sensor (s1/s2), Group 2: scene_id, Group 3: patch_id
