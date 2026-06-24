@@ -21,11 +21,12 @@ from torch.utils.data import DataLoader, random_split
 from torch.optim.lr_scheduler import LinearLR, CosineAnnealingLR, SequentialLR
 
 from datasets.sen12ms_dataset import SEN12MSDataset
-from models.dual_encoder import DualEncoder, InfoNCELoss
+from datasets.sen12ms_hard_neg_dataset import SEN12MSHardNegDataset
+from models.dual_encoder import DualEncoder, InfoNCELoss, InfoNCEWithHardNegs
 from models.encoder import get_device
 
 
-def train_one_epoch(model, loader, optimizer, criterion, device, accum_steps):
+def train_one_epoch(model, loader, optimizer, criterion, device, accum_steps, use_hard_neg: bool = False):
     model.train()
     total_loss = 0.0
     optimizer.zero_grad()
@@ -35,7 +36,12 @@ def train_one_epoch(model, loader, optimizer, criterion, device, accum_steps):
         opt = batch["optical"].to(device)
 
         sar_emb, opt_emb = model(sar, opt)
-        loss = criterion(sar_emb, opt_emb)
+        if use_hard_neg:
+            hard_neg = batch["hard_neg_sar"].to(device)
+            hard_neg_emb = model.encode_sar(hard_neg)
+            loss = criterion(sar_emb, opt_emb, hard_neg_emb)
+        else:
+            loss = criterion(sar_emb, opt_emb)
         loss = loss / accum_steps  # scale for accumulation
         loss.backward()
 
@@ -78,17 +84,36 @@ def main():
     parser.add_argument("--workers", type=int, default=0)
     parser.add_argument("--output-dir", default="outputs/checkpoints")
     parser.add_argument("--val-split", type=float, default=0.1)
+    parser.add_argument("--hard-neg-mining", action="store_true",
+                        help="Enable hard negative mining using LC labels")
+    parser.add_argument("--lc-labels", default="outputs/index/lc_labels.json",
+                        help="Path to lc_labels.json (required for hard-neg-mining)")
+    parser.add_argument("--hard-neg-weight", type=float, default=1.0,
+                        help="Weight for hard negative logits in InfoNCEWithHardNegs")
     args = parser.parse_args()
 
     device = get_device()
     print(f"Device: {device}")
     print(f"Effective batch size: {args.batch_size * args.accum_steps}")
 
+    if args.hard_neg_mining:
+        from pathlib import Path as _Path
+        if not _Path(args.lc_labels).exists():
+            raise FileNotFoundError(
+                f"LC labels not found at {args.lc_labels}. "
+                "Run: python backend/scripts/build_lc_index.py"
+            )
+        print(f"[Train] Hard negative mining ENABLED. LC labels: {args.lc_labels}")
+
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # Dataset split
-    dataset = SEN12MSDataset(args.data, normalize=True)
+    if args.hard_neg_mining:
+        dataset = SEN12MSHardNegDataset(args.data, normalize=True,
+                                        lc_labels_path=args.lc_labels)
+    else:
+        dataset = SEN12MSDataset(args.data, normalize=True)
     val_size = max(1, int(len(dataset) * args.val_split))
     train_size = len(dataset) - val_size
     train_ds, val_ds = random_split(dataset, [train_size, val_size])
@@ -103,7 +128,12 @@ def main():
     # Model
     model = DualEncoder(embedding_dim=args.embedding_dim, pretrained=True,
                         freeze_backbone=False).to(device)
-    criterion = InfoNCELoss(temperature=args.temperature)
+    if args.hard_neg_mining:
+        criterion = InfoNCEWithHardNegs(temperature=args.temperature,
+                                        hard_neg_weight=args.hard_neg_weight)
+    else:
+        criterion = InfoNCELoss(temperature=args.temperature)
+    val_criterion = InfoNCELoss(temperature=args.temperature)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
 
     # LR schedule: linear warmup then cosine annealing
@@ -129,8 +159,8 @@ def main():
     for epoch in range(1, args.epochs + 1):
         t0 = time.time()
         train_loss = train_one_epoch(model, train_loader, optimizer, criterion,
-                                     device, args.accum_steps)
-        val_loss = validate(model, val_loader, criterion, device)
+                                     device, args.accum_steps, use_hard_neg=args.hard_neg_mining)
+        val_loss = validate(model, val_loader, val_criterion, device)
         scheduler.step()
 
         history["train_loss"].append(train_loss)
