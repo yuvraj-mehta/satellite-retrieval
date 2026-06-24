@@ -9,7 +9,7 @@ export const useRetrieval = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const search = async (file, queryModality, targetModality) => {
+  const search = async (file, queryModality, targetModality, k = 5) => {
     setLoading(true);
     setError(null);
     setResults([]);
@@ -18,7 +18,7 @@ export const useRetrieval = () => {
     formData.append("file", file);
     formData.append("query_modality", queryModality);
     formData.append("target_modality", targetModality);
-    formData.append("k", 5);
+    formData.append("k", k);
 
     try {
       const response = await axios.post(`${API_BASE}/query`, formData, {

@@ -6,11 +6,30 @@ export default function UploadPanel({
   loading,
   queryModality,
   targetModality,
+  topK,
   onModalityChange,
+  onTopKChange,
 }) {
   const [file, setFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const fileInputRef = useRef(null);
+
+  const validateAndSetFile = (selectedFile) => {
+    setUploadError("");
+    if (!selectedFile) return;
+    
+    const validExtensions = ['.tif', '.tiff'];
+    const fileName = selectedFile.name.toLowerCase();
+    const isValid = validExtensions.some(ext => fileName.endsWith(ext));
+    
+    if (!isValid) {
+      setUploadError("Invalid file type. Please upload a raw .tif or .tiff satellite image.");
+      setFile(null);
+    } else {
+      setFile(selectedFile);
+    }
+  };
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -25,13 +44,13 @@ export default function UploadPanel({
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setFile(e.dataTransfer.files[0]);
+      validateAndSetFile(e.dataTransfer.files[0]);
     }
   };
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      validateAndSetFile(e.target.files[0]);
     }
   };
 
@@ -61,6 +80,7 @@ export default function UploadPanel({
   const handleRemoveFile = (e) => {
     e.stopPropagation();
     setFile(null);
+    setUploadError("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -69,7 +89,7 @@ export default function UploadPanel({
   return (
     <form className="upload-panel glass" onSubmit={handleSubmit}>
       <div
-        className={`drop-zone ${isDragging ? "dragging" : ""} ${file ? "has-file" : ""}`}
+        className={`drop-zone ${isDragging ? "dragging" : ""} ${file ? "has-file" : ""} ${uploadError ? "has-error" : ""}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -79,7 +99,7 @@ export default function UploadPanel({
           type="file"
           ref={fileInputRef}
           onChange={handleFileChange}
-          accept=".tif"
+          accept=".tif,.tiff"
           style={{ display: "none" }}
         />
         
@@ -97,7 +117,11 @@ export default function UploadPanel({
         ) : (
           <div className="drop-prompt">
             <span className="upload-icon">🛰️</span>
-            <p className="drop-text">Drag & drop a query .tif file here</p>
+            {uploadError ? (
+              <p className="drop-text" style={{ color: "#ef4444" }}>{uploadError}</p>
+            ) : (
+              <p className="drop-text">Drag & drop a query scene (.tif)</p>
+            )}
             <p className="or-text">or</p>
             <button type="button" className="browse-btn">
               Browse Files
@@ -106,7 +130,7 @@ export default function UploadPanel({
         )}
       </div>
 
-      <div className="modality-row">
+      <div className="config-grid">
         <div className="modality-field">
           <label>Query Modality</label>
           <select
@@ -114,8 +138,8 @@ export default function UploadPanel({
             onChange={handleQueryModalityChange}
             className="modality-select"
           >
-            <option value="sar">SAR (Sentinel-1)</option>
-            <option value="optical">Optical (Sentinel-2)</option>
+            <option value="sar">Sentinel-1 (SAR)</option>
+            <option value="optical">Sentinel-2 (Optical)</option>
           </select>
         </div>
 
@@ -126,9 +150,21 @@ export default function UploadPanel({
             onChange={handleTargetModalityChange}
             className="modality-select"
           >
-            <option value="optical">Optical (Sentinel-2)</option>
-            <option value="sar">SAR (Sentinel-1)</option>
+            <option value="optical">Sentinel-2 (Optical)</option>
+            <option value="sar">Sentinel-1 (SAR)</option>
           </select>
+        </div>
+
+        <div className="modality-field slider-field">
+          <label>Top-K Retrievals: {topK}</label>
+          <input 
+            type="range" 
+            min="1" 
+            max="15" 
+            value={topK} 
+            onChange={(e) => onTopKChange(parseInt(e.target.value))}
+            className="k-slider"
+          />
         </div>
       </div>
 
@@ -140,10 +176,10 @@ export default function UploadPanel({
         {loading ? (
           <>
             <span className="spinner" />
-            <span>Searching...</span>
+            <span>Projecting into Shared Embedding Space...</span>
           </>
         ) : (
-          <span>Perform Search</span>
+          <span>Run Cross-Modal Retrieval</span>
         )}
       </button>
     </form>

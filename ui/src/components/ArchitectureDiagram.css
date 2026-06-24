@@ -1,0 +1,252 @@
+.architecture-section {
+  width: 100%;
+  max-width: 1000px;
+  padding: 32px;
+  margin-top: 24px;
+  animation: fadeIn 0.8s ease-out 0.4s both;
+}
+
+.arch-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.arch-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.arch-subtitle {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.arch-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 850px) {
+  .arch-diagram {
+    flex-direction: column;
+  }
+}
+
+.arch-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  z-index: 2;
+}
+
+.arch-node {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  min-width: 200px;
+  transition: all 0.3s ease;
+}
+
+.arch-node:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.node-icon {
+  font-size: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.node-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.node-text strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.node-text span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.arch-box {
+  background: rgba(14, 165, 233, 0.05);
+  border: 1px dashed rgba(14, 165, 233, 0.3);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+
+.box-header {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  font-weight: 700;
+  text-align: center;
+}
+
+.box-nodes {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.backbone {
+  justify-content: center;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 10px;
+  min-width: 160px;
+}
+
+.node-label {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.projection-heads {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.proj-head {
+  background: linear-gradient(90deg, rgba(14, 165, 233, 0.1), rgba(139, 92, 246, 0.1));
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--accent-2);
+  font-weight: 600;
+}
+
+.embedding-space {
+  flex-direction: column;
+  text-align: center;
+  padding: 24px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid var(--accent-2);
+  min-width: 220px;
+}
+
+.space-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.loss-badge {
+  margin-top: 8px;
+  display: inline-block;
+  padding: 4px 8px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 4px;
+  font-size: 10px !important;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+
+.arch-flow {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 60px;
+  min-height: 120px;
+  flex: 1;
+  position: relative;
+}
+
+.single-flow {
+  gap: 0;
+  align-items: center;
+}
+
+.flow-line {
+  height: 2px;
+  width: 40px;
+  background: var(--border);
+  position: relative;
+}
+
+.flow-line::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  top: -4px;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 6px solid var(--border);
+}
+
+.flow-line.animated {
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  background-size: 200% 100%;
+  animation: flowAnim 2s infinite linear;
+}
+
+.flow-line.animated::after {
+  border-left-color: var(--accent);
+}
+
+.flow-line.converging {
+  width: 60px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+.flow-line.converging::after {
+  border-left-color: var(--accent-2);
+}
+
+.faiss-node {
+  background: rgba(34, 197, 94, 0.05);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.results-node {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(139, 92, 246, 0.1));
+  border-color: var(--accent);
+}
+
+.flow-arrow {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 20px;
+  animation: bounce 2s infinite;
+}
+
+@keyframes flowAnim {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}

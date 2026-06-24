@@ -124,6 +124,15 @@ async def query(
             raise HTTPException(status_code=500, detail=f"Failed to save uploaded file: {e}")
 
     try:
+        import rasterio
+        with rasterio.open(tmp_path) as src:
+            num_bands = src.count
+
+        if query_modality == "optical" and num_bands < 4:
+            raise HTTPException(status_code=400, detail=f"Modality mismatch: You selected Optical (Sentinel-2) which requires at least 4 bands, but the uploaded image has {num_bands} band(s). If you uploaded a PNG/JPG, note that the engine requires raw multi-spectral .tif files.")
+        elif query_modality == "sar" and num_bands > 2:
+            raise HTTPException(status_code=400, detail=f"Modality mismatch: You selected SAR (Sentinel-1) which expects 2 bands, but the uploaded image has {num_bands} bands. If you uploaded an Optical image, please change the Query Modality.")
+
         # Load and normalize query image
         # S1: all bands; S2: B4, B8, B11, B12 (indices 3, 7, 10, 11)
         bands = None if query_modality == "sar" else [3, 7, 10, 11]
@@ -176,6 +185,8 @@ async def query(
             "retrieval_ms": retrieval_ms
         }
 
+    except HTTPException as he:
+        raise he
     except Exception as e:
         print(f"[API] Error processing query: {e}")
         import traceback
@@ -185,3 +196,4 @@ async def query(
         # Cleanup temp file
         if tmp_path.exists():
             tmp_path.unlink()
+
