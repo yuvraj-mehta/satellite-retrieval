@@ -131,6 +131,28 @@ class DualEncoder(nn.Module):
         feat = self.opt_backbone(x)      # (B, 2048)
         return self.opt_projector(feat)  # (B, embedding_dim)
 
+    def encode_optical_rgb(self, x):
+        """
+        Encode 3-channel true-colour RGB optical images (B4, B3, B2).
+
+        Reuses opt_backbone + opt_projector (no retraining required).
+        If opt_backbone expects 4 channels (as in the torchgeo native path),
+        we pad the input with a zero channel to match the expected shape of the
+        1x1 conv adapter.
+
+        Args:
+            x: (B, 3, H, W) tensor, Z-score normalized
+        Returns:
+            (B, embedding_dim) L2-normalized embedding
+        """
+        if self.opt_backbone.in_channels == 4:
+            # Pad 3-ch input with a zero channel to make it 4-ch
+            zeros = torch.zeros(x.shape[0], 1, x.shape[2], x.shape[3], device=x.device, dtype=x.dtype)
+            x = torch.cat([x, zeros], dim=1)
+        
+        feat = self.opt_backbone(x)      # adapter projects to backbone channels
+        return self.opt_projector(feat)
+
     def forward(self, sar, optical):
         """
         Forward pass for training.
