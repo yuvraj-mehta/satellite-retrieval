@@ -14,9 +14,4 @@ This folder contains all custom reports, evaluations, domain guides, and pitch p
 ### 2. [hackathon/](file:///Users/yuvrajmehta/Developer/satellite-retrieval/project_reports/hackathon) — Preparation Guides
 - **[HACKATHON_PREP.md](file:///Users/yuvrajmehta/Developer/satellite-retrieval/project_reports/hackathon/HACKATHON_PREP.md)**: Preparation guide covering presentation key points, expected judges' questions, and core architectural summaries.
 
-### 3. [gsd-history/](file:///Users/yuvrajmehta/Developer/satellite-retrieval/project_reports/gsd-history) — GSD Phase Logs
-- **[ALL_PHASE_SUMMARIES.md](file:///Users/yuvrajmehta/Developer/satellite-retrieval/project_reports/gsd-history/ALL_PHASE_SUMMARIES.md)**: Phase summaries for Phase 1 through 5.
-- **[WALKTHROUGH.md](file:///Users/yuvrajmehta/Developer/satellite-retrieval/project_reports/gsd-history/WALKTHROUGH.md)**: Original metrics and verification checklist walkthrough.
-- **[ROADMAP.md](file:///Users/yuvrajmehta/Developer/satellite-retrieval/project_reports/gsd-history/ROADMAP.md)**: Task roadmap.
-- **[SPECIFICATION.md](file:///Users/yuvrajmehta/Developer/satellite-retrieval/project_reports/gsd-history/SPECIFICATION.md)**: Project requirements.
-- **[STATE.md](file:///Users/yuvrajmehta/Developer/satellite-retrieval/project_reports/gsd-history/STATE.md)**: GSD session status copies.
+
