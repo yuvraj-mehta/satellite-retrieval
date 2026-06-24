@@ -8,7 +8,12 @@ The system matches geographically co-located patch pairs across different sensor
 - **SAR → SAR** (same-modal)
 - **Optical → Optical** (same-modal)
 
-It learns a shared embedding space using a contrastive dual-encoder architecture (two ResNet50 backbones with a shared projection head, trained via InfoNCE/NT-Xent loss) and performs similarity search using a FAISS vector index.
+It learns a shared embedding space using a contrastive dual-encoder architecture:
+- **Backbones**: Pretrained sensor-native backbones from `torchgeo` (`SENTINEL1_ALL_MOCO` for SAR, `SENTINEL2_RGB_MOCO` for optical)
+- **Projection Heads**: Modality-specific projection heads mapping to a 512-dimensional shared embedding space
+- **Inputs**: 4-channel optical inputs (B4, B8, B11, B12) and 2-channel SAR inputs (VV, VH) normalized using empirical dataset Z-score normalization
+- **Training**: InfoNCE/NT-Xent contrastive loss with a linear warmup & cosine decay scheduler
+- **Search**: Similarity search using a FAISS vector index
 
 ---
 
@@ -19,8 +24,8 @@ Ensure you have **Python 3.11** installed. Create a virtual environment and inst
 ```bash
 python3.11 -m venv venv
 source venv/bin/activate
-pip install torch==2.12.1 torchvision==0.27.1 faiss-cpu==1.14.3 rasterio==1.4.4 \
-            numpy==1.26.4 matplotlib pillow tqdm scikit-learn
+pip install torch==2.12.1 torchvision==0.27.1 torchgeo faiss-cpu==1.14.3 \
+            rasterio==1.4.4 numpy==1.26.4 matplotlib pillow tqdm
 ```
 
 ---
@@ -107,20 +112,20 @@ python scripts/demo.py \
 ## 📊 Evaluation Metrics
 
 ### Pretrained ResNet50 Zero-Shot Baseline
-| Mode | F1@5 | P@5 | R@5 | F1@10 | P@10 | R@10 | Latency / query |
-|---|---|---|---|---|---|---|---|
-| **SAR -> SAR** | 0.3333 | 0.2000 | 1.0000 | 0.1818 | 0.1000 | 1.0000 | 0.08ms |
-| **OPT -> OPT** | 0.3333 | 0.2000 | 1.0000 | 0.1818 | 0.1000 | 1.0000 | 0.02ms |
-| **SAR -> OPT** | 0.0014 | 0.0009 | 0.0043 | 0.0016 | 0.0009 | 0.0086 | 0.02ms |
-| **OPT -> SAR** | 0.0017 | 0.0010 | 0.0051 | 0.0016 | 0.0009 | 0.0086 | 0.02ms |
+| Mode | F1@5 | Recall@5 | F1@10 | Recall@10 | MRR | Latency / query |
+|---|---|---|---|---|---|---|
+| **SAR -> SAR** | 0.3333 | 1.0000 | 0.1818 | 1.0000 | 1.0000 | 0.05ms |
+| **OPT -> OPT** | 0.3333 | 1.0000 | 0.1818 | 1.0000 | 1.0000 | 0.02ms |
+| **SAR -> OPT** | 0.0086 | 0.0257 | 0.0072 | 0.0394 | 0.0156 | 0.02ms |
+| **OPT -> SAR** | 0.0077 | 0.0231 | 0.0070 | 0.0386 | 0.0171 | 0.02ms |
 
 ### Trained Dual-Encoder (20 Epochs infoNCE)
-| Mode | F1@5 | P@5 | R@5 | F1@10 | P@10 | R@10 | Latency / query |
-|---|---|---|---|---|---|---|---|
-| **SAR -> SAR** | 0.3333 | 0.2000 | 1.0000 | 0.1818 | 0.1000 | 1.0000 | 0.07ms |
-| **OPT -> OPT** | 0.3333 | 0.2000 | 1.0000 | 0.1818 | 0.1000 | 1.0000 | 0.02ms |
-| **SAR -> OPT** | **0.2576** | **0.1546** | **0.7729** | **0.1613** | **0.0887** | **0.8869** | 0.02ms |
-| **OPT -> SAR** | **0.2596** | **0.1558** | **0.7789** | **0.1619** | **0.0890** | **0.8903** | 0.02ms |
+| Mode | F1@5 | Recall@5 | F1@10 | Recall@10 | MRR | Latency / query |
+|---|---|---|---|---|---|---|
+| **SAR -> SAR** | 0.3333 | 1.0000 | 0.1818 | 1.0000 | 1.0000 | 0.09ms |
+| **OPT -> OPT** | 0.3333 | 1.0000 | 0.1818 | 1.0000 | 1.0000 | 0.03ms |
+| **SAR -> OPT** | **0.3008** | **0.9023** | **0.1747** | **0.9606** | **0.7063** | 0.02ms |
+| **OPT -> SAR** | **0.2965** | **0.8895** | **0.1731** | **0.9520** | **0.6927** | 0.02ms |
 
 ---
 
