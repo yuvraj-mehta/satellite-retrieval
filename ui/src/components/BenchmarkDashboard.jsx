@@ -46,6 +46,7 @@ export default function BenchmarkDashboard() {
   }
 
   const modes = ['SAR -> SAR', 'OPT -> OPT', 'SAR -> OPT', 'OPT -> SAR'];
+  const hasSemantic = data?.has_semantic;
 
   return (
     <div className="benchmark-section">
@@ -60,16 +61,21 @@ export default function BenchmarkDashboard() {
         {modes.map((mode) => {
           const modeData = data?.[mode] || {};
           const f1_5 = modeData['mean_f1@5'] || 0;
+          const sem_f1_5 = modeData['semantic_mean_f1@5'] || 0;
           const f1_10 = modeData['mean_f1@10'] || 0;
+          const sem_f1_10 = modeData['semantic_mean_f1@10'] || 0;
           const mrr = modeData['mrr'] || 0;
           const latency = modeData['time_per_query_ms'] || 0;
           
           const isCrossModal = mode.includes('SAR -> OPT') || mode.includes('OPT -> SAR');
           const accentColor = isCrossModal ? '#00d4ff' : '#00ff9d';
           
-          // Max F1 reference is 0.4. If value is higher, cap it at 100% width.
+          // Reference max values to compute bar percentages
           const maxF1Ref = 0.4;
-          const percentage = Math.min((f1_5 / maxF1Ref) * 100, 100);
+          const maxSemF1Ref = 0.8;
+          
+          const geoPercentage = Math.min((f1_5 / maxF1Ref) * 100, 100);
+          const semPercentage = Math.min((sem_f1_5 / maxSemF1Ref) * 100, 100);
 
           return (
             <div key={mode} className="benchmark-card" style={{ '--accent-color': accentColor }}>
@@ -80,29 +86,59 @@ export default function BenchmarkDashboard() {
                 </span>
               </div>
 
-              <div className="metric-row">
-                <span className="metric-label">F1@5:</span>
-                <span className="metric-value font-mono">{f1_5.toFixed(4)}</span>
+              {/* Geographic F1@5 Row */}
+              <div className="bar-wrapper">
+                <div className="bar-info">
+                  <span className="bar-label">{hasSemantic ? "Geographic F1@5" : "F1@5"}</span>
+                  <span className="bar-val font-mono">{f1_5.toFixed(4)}</span>
+                </div>
+                <div className="bar-container">
+                  <svg className="bar-svg" width="100%" height="8">
+                    <rect className="bar-track" width="100%" height="8" rx="4" />
+                    <rect
+                      className="bar-fill"
+                      width={`${geoPercentage}%`}
+                      height="8"
+                      rx="4"
+                      fill={accentColor}
+                    />
+                  </svg>
+                </div>
               </div>
-              
-              {/* Horizontal Bar Chart */}
-              <div className="bar-container">
-                <svg className="bar-svg" width="100%" height="8">
-                  <rect className="bar-track" width="100%" height="8" rx="4" />
-                  <rect
-                    className="bar-fill"
-                    width={`${percentage}%`}
-                    height="8"
-                    rx="4"
-                    fill={accentColor}
-                  />
-                </svg>
-              </div>
+
+              {/* Semantic F1@5 Row */}
+              {hasSemantic && (
+                <div className="bar-wrapper" style={{ marginTop: '0.75rem' }}>
+                  <div className="bar-info">
+                    <span className="bar-label">Semantic F1@5</span>
+                    <span className="bar-val font-mono" style={{ color: '#a855f7' }}>{sem_f1_5.toFixed(4)}</span>
+                  </div>
+                  <div className="bar-container">
+                    <svg className="bar-svg" width="100%" height="8">
+                      <rect className="bar-track" width="100%" height="8" rx="4" />
+                      <rect
+                        className="bar-fill semantic"
+                        width={`${semPercentage}%`}
+                        height="8"
+                        rx="4"
+                        fill="#a855f7"
+                      />
+                    </svg>
+                  </div>
+                  {f1_5 > 0 && (
+                    <div className="semantic-improvement">
+                      +{Math.round(((sem_f1_5 - f1_5) / f1_5) * 100)}% vs geographic
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="metrics-sub-grid">
                 <div className="sub-metric">
-                  <span className="sub-label">F1@10</span>
-                  <span className="sub-value font-mono">{f1_10.toFixed(4)}</span>
+                  <span className="sub-label">{hasSemantic ? "Geo/Sem F1@10" : "F1@10"}</span>
+                  <span className="sub-value font-mono">
+                    {hasSemantic ? `${f1_10.toFixed(3)} / ${sem_f1_10.toFixed(3)}` : f1_10.toFixed(4)}
+                  </span>
                 </div>
                 <div className="sub-metric">
                   <span className="sub-label">MRR</span>
@@ -125,9 +161,9 @@ export default function BenchmarkDashboard() {
       </div>
 
       <p className="geo-note">
-        {data?.has_semantic ? (
+        {hasSemantic ? (
           <span style={{ color: '#00ff9d' }}>
-            ✅ Semantic LC-label evaluation is active. Dashboard reflects land-cover class correctness.
+            ✅ Semantic LC evaluation active — patches sharing the same land-cover class counted as relevant.
           </span>
         ) : (
           <span>
