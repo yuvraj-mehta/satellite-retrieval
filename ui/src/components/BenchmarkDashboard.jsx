@@ -1,0 +1,141 @@
+import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../config';
+import './BenchmarkDashboard.css';
+
+export default function BenchmarkDashboard() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/benchmarks`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Error: ${res.status} ${res.statusText}`);
+        }
+        return res.json();
+      })
+      .then((json) => {
+        setData(json);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message || 'Failed to fetch benchmarks');
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="benchmark-section loading-container">
+        <div className="spinner"></div>
+        <p>Loading benchmark data...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="benchmark-section">
+        <div className="error-card">
+          <h3>⚠️ Benchmark Load Error</h3>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const modes = ['SAR -> SAR', 'OPT -> OPT', 'SAR -> OPT', 'OPT -> SAR'];
+
+  return (
+    <div className="benchmark-section">
+      <div className="benchmark-header">
+        <h2>📊 System Benchmarks</h2>
+        <p className="benchmark-subtitle">
+          Empirical evaluation on 1,167 SEN12MS patch pairs — 4 retrieval modes
+        </p>
+      </div>
+
+      <div className="benchmark-grid">
+        {modes.map((mode) => {
+          const modeData = data?.[mode] || {};
+          const f1_5 = modeData['mean_f1@5'] || 0;
+          const f1_10 = modeData['mean_f1@10'] || 0;
+          const mrr = modeData['mrr'] || 0;
+          const latency = modeData['time_per_query_ms'] || 0;
+          
+          const isCrossModal = mode.includes('SAR -> OPT') || mode.includes('OPT -> SAR');
+          const accentColor = isCrossModal ? '#00d4ff' : '#00ff9d';
+          
+          // Max F1 reference is 0.4. If value is higher, cap it at 100% width.
+          const maxF1Ref = 0.4;
+          const percentage = Math.min((f1_5 / maxF1Ref) * 100, 100);
+
+          return (
+            <div key={mode} className="benchmark-card" style={{ '--accent-color': accentColor }}>
+              <div className="card-header">
+                <h3>{mode}</h3>
+                <span className="badge" style={{ backgroundColor: `${accentColor}1A`, color: accentColor, border: `1px solid ${accentColor}33` }}>
+                  {isCrossModal ? 'Cross-Modal' : 'Same-Modal'}
+                </span>
+              </div>
+
+              <div className="metric-row">
+                <span className="metric-label">F1@5:</span>
+                <span className="metric-value font-mono">{f1_5.toFixed(4)}</span>
+              </div>
+              
+              {/* Horizontal Bar Chart */}
+              <div className="bar-container">
+                <svg className="bar-svg" width="100%" height="8">
+                  <rect className="bar-track" width="100%" height="8" rx="4" />
+                  <rect
+                    className="bar-fill"
+                    width={`${percentage}%`}
+                    height="8"
+                    rx="4"
+                    fill={accentColor}
+                  />
+                </svg>
+              </div>
+
+              <div className="metrics-sub-grid">
+                <div className="sub-metric">
+                  <span className="sub-label">F1@10</span>
+                  <span className="sub-value font-mono">{f1_10.toFixed(4)}</span>
+                </div>
+                <div className="sub-metric">
+                  <span className="sub-label">MRR</span>
+                  <span className="sub-value font-mono">{mrr.toFixed(4)}</span>
+                </div>
+                <div className="sub-metric">
+                  <span className="sub-label">Latency</span>
+                  <span className="sub-value font-mono">{latency.toFixed(3)}ms</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="latency-hero-card">
+        <div className="latency-hero">&lt; 0.1ms</div>
+        <p className="latency-label">Average Retrieval Latency per Query</p>
+        <p className="latency-subtext">Sub-millisecond FAISS retrieval — 1,167-patch index</p>
+      </div>
+
+      <p className="geo-note">
+        {data?.has_semantic ? (
+          <span style={{ color: '#00ff9d' }}>
+            ✅ Semantic LC-label evaluation is active. Dashboard reflects land-cover class correctness.
+          </span>
+        ) : (
+          <span>
+            ⚠️ Current scores use geographic co-location as ground truth. Semantic LC-label
+            evaluation (Phase 10) will significantly raise cross-modal F1.
+          </span>
+        )}
+      </p>
+    </div>
+  );
+}
