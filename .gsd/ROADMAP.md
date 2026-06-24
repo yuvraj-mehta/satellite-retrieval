@@ -1,6 +1,6 @@
 # ROADMAP.md
 
-> **Current Phase**: Phase 11 — Three-Modality Support (SAR + Optical RGB + Multispectral)
+> **Current Phase**: Phase 12 — Hard Negative Mining
 > **Milestone**: v1.3 — Hackathon Finalist Polish
 
 ---
@@ -179,7 +179,7 @@
 ---
 
 ### Phase 11: Three-Modality Support (SAR + Optical RGB + Multispectral)
-**Status**: ⬜ Planned
+**Status**: ✅ Complete
 **Objective**: Demonstrate the architecture scales beyond 2 modalities by splitting Sentinel-2 into a distinct RGB Optical modality (B2, B3, B4 — 3-channel true colour) and the existing Multispectral modality (B4, B8, B11, B12 — 4-channel). The RGB encoder reuses the existing `opt_backbone` + `opt_projector` with a band-selection adapter so no retraining is required. Exposes `optical_rgb` as a valid `query_modality` in the API and UI dropdown.
 
 **Key Tasks**:
