@@ -1,20 +1,26 @@
 # STATE.md — Project Memory
 
 > Last Updated: 2026-06-25
-> Session: Phase 8 complete — Web UI
+> Session: Phases 9–12 planned (Evaluation Dashboard, Semantic Eval, 3-Modality, Hard Neg Mining)
 
 ## Current Position
-- **Phase**: 8 (verified)
-- **Status**: ✅ Complete and verified
+- **Phase**: 9 — Evaluation Dashboard UI
+- **Status**: 🔄 Plans written — ready for /execute 9
 
-## Last Session Summary
-Phase 8 executed successfully.
-- Restructured the workspace into `backend/` and `ui/` directories to separate concerns.
-- Implemented a FastAPI API wrapper (`backend/api/`) around the trained `DualEncoder` model and FAISS vector index.
-- Created a Vite + React application (`ui/`) with dropzone file uploading, modality selection, live latencies, and search grids.
+## Phase 9–12 Plans
+| Phase | Name | Plans | Wave |
+|-------|------|-------|------|
+| 9  | Evaluation Dashboard UI | `9/1-PLAN.md` (backend router), `9/2-PLAN.md` (React dashboard + tabs) | 1→2 |
+| 10 | Semantic Evaluation (LC Labels) | `10/1-PLAN.md` (LC index + metrics.py), `10/2-PLAN.md` (evaluate.py + UI update) | 1→2 |
+| 11 | Three-Modality Support | `11/1-PLAN.md` (dataset + encoder), `11/2-PLAN.md` (API + UI dropdown) | 1→2 |
+| 12 | Hard Negative Mining | `12/1-PLAN.md` (dataset + loss), `12/2-PLAN.md` (train.py flag) | 1→2 |
 
 ## Next Steps
-1. All phases of the roadmap are successfully completed and verified! 🎉
+1. `/execute 9` — run Phase 9 plans (no retraining, immediate judge impact)
+2. `/execute 10` — run Phase 10 plans (needs LC labels — already available)
+3. `/execute 11` — run Phase 11 plans (no retraining needed — Option A shared encoder)
+4. `/execute 12` — run Phase 12 plans, then retrain the model (~2hr on GPU)
+
 
 ## Phase 6 Plans
 | Plan | Focus | Wave |

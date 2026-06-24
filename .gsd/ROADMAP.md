@@ -1,7 +1,7 @@
 # ROADMAP.md
 
-> **Current Phase**: Completed 🎉
-> **Milestone**: v1.2 — Hackathon-Ready Submission
+> **Current Phase**: Phase 9 — Evaluation Dashboard UI
+> **Milestone**: v1.3 — Hackathon Finalist Polish
 
 ---
 
@@ -143,3 +143,67 @@
 **Plans**: `7/1-PLAN.md` (eval fix + demo fix) → `7/2-PLAN.md` (README + compare script)
 
 **Requirements**: SPEC Goals 4, 5
+
+---
+
+### Phase 9: Evaluation Dashboard UI
+**Status**: 🔄 In Progress
+**Objective**: Surface the existing `evaluation_results.json` benchmark data directly in the React UI so judges see empirical F1@5, F1@10, MRR, and latency metrics front-and-center instead of buried in backend JSON files. Add a `/benchmarks` API endpoint and a `BenchmarkDashboard` tab component with inline SVG charts and a glassmorphism aesthetic matching the existing UI.
+
+**Key Tasks**:
+- Add `backend/api/benchmark.py` router with `GET /benchmarks`
+- Register the router in `backend/api/main.py`
+- Build `ui/src/components/BenchmarkDashboard.jsx` with bar charts and latency gauges
+- Add "📊 Benchmarks" tab to `ui/src/App.jsx`
+
+**Plans**: `9/1-PLAN.md` (backend router) → `9/2-PLAN.md` (React dashboard component)
+
+**Requirements**: SPEC Goals 4, 5
+
+---
+
+### Phase 10: Semantic Evaluation (Land Cover Labels)
+**Status**: ⬜ Planned
+**Objective**: Replace geographic-exact ground truth with semantic class ground truth using the SEN12MS IGBP Land Cover labels that already ship in `backend/SEN12MS-master/labels/`. Two patches are now "relevant" if they share the same dominant LC class (e.g., both Evergreen Broadleaf Forest), regardless of GPS location. This directly matches the problem statement wording: "based on semantic class". Expected to raise cross-modal F1 scores 5–10×.
+
+**Key Tasks**:
+- Write `backend/scripts/build_lc_index.py` to extract majority LC class per patch from `single_label_IGBPfull_ClsNum.pkl`
+- Add `mean_semantic_f1_at_k()` to `backend/evaluation/metrics.py`
+- Add `--lc-labels` flag to `backend/evaluation/evaluate.py` to run both geographic and semantic evaluation
+- Extend `/benchmarks` to serve semantic scores; update BenchmarkDashboard to display both
+
+**Plans**: `10/1-PLAN.md` (LC index + metrics) → `10/2-PLAN.md` (evaluate + dashboard update)
+
+**Requirements**: SPEC Goals 4, 5
+
+---
+
+### Phase 11: Three-Modality Support (SAR + Optical RGB + Multispectral)
+**Status**: ⬜ Planned
+**Objective**: Demonstrate the architecture scales beyond 2 modalities by splitting Sentinel-2 into a distinct RGB Optical modality (B2, B3, B4 — 3-channel true colour) and the existing Multispectral modality (B4, B8, B11, B12 — 4-channel). The RGB encoder reuses the existing `opt_backbone` + `opt_projector` with a band-selection adapter so no retraining is required. Exposes `optical_rgb` as a valid `query_modality` in the API and UI dropdown.
+
+**Key Tasks**:
+- Add `optical_rgb_bands` config and normalization constants to `backend/datasets/sen12ms_dataset.py`
+- Add `encode_optical_rgb()` method to `backend/models/dual_encoder.py`
+- Support `optical_rgb` modality in `backend/api/main.py` query routing and band loading
+- Add "Optical RGB (True Colour)" option to `ui/src/components/UploadPanel.jsx` modality dropdowns
+
+**Plans**: `11/1-PLAN.md` (dataset + encoder) → `11/2-PLAN.md` (API + UI)
+
+**Requirements**: SPEC Goals 3, 5
+
+---
+
+### Phase 12: Hard Negative Mining
+**Status**: ⬜ Planned
+**Objective**: Upgrade the training loop so the InfoNCE loss is computed against hard negatives — patches from different geographic locations that share the same LC class (e.g., Forest A vs Forest B). This forces the model to learn a discriminative embedding space within semantic classes, not just across obviously different biomes. Requires Phase 10 LC labels as a prerequisite. Requires a full model retrain after implementation.
+
+**Key Tasks**:
+- Build `backend/scripts/build_negative_pairs.py` using LC labels to pre-compute same-class pools
+- Create `backend/datasets/sen12ms_hard_neg_dataset.py` with triplet sampling
+- Add `InfoNCEWithHardNegs` loss variant to `backend/models/dual_encoder.py`
+- Add `--hard-neg-mining` flag to `backend/train.py`
+
+**Plans**: `12/1-PLAN.md` (dataset + loss) → `12/2-PLAN.md` (training loop)
+
+**Requirements**: SPEC Goals 3, 4
