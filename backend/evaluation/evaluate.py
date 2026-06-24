@@ -24,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import numpy as np
 from retrieval.faiss_utils import FAISSRetriever
-from evaluation.metrics import mean_f1_at_k, mean_reciprocal_rank
+from evaluation.metrics import mean_f1_at_k, mean_reciprocal_rank, mean_semantic_f1_at_k
 
 
 def build_modality_retriever(embeddings, metadata, embedding_dim=None):
@@ -65,7 +65,7 @@ def _filter_self(result_list: list, query_meta: dict, k: int) -> list:
 
 def evaluate_mode(
     query_embs, query_meta, retriever, gallery_modality, k_values,
-    same_modal: bool = False
+    same_modal: bool = False, lc_labels = None
 ):
     """
     Run retrieval for one query-to-gallery mode and compute metrics.
@@ -106,6 +106,9 @@ def evaluate_mode(
     for k in k_values:
         m = mean_f1_at_k(query_meta, all_results, k=k, target_modality=gallery_modality)
         metrics.update(m)
+        if lc_labels is not None:
+            m_sem = mean_semantic_f1_at_k(query_meta, all_results, k=k, target_modality=gallery_modality, lc_labels=lc_labels)
+            metrics.update(m_sem)
 
     # Add MRR
     mrr = mean_reciprocal_rank(query_meta, all_results, target_modality=gallery_modality)
@@ -119,6 +122,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--index-dir", default="outputs/index")
     parser.add_argument("--k", nargs="+", type=int, default=[5, 10])
+    parser.add_argument("--lc-labels", default=None, help="Path to lc_labels.json for semantic evaluation")
     args = parser.parse_args()
 
     idx_dir = Path(args.index_dir)
@@ -134,6 +138,15 @@ def main():
 
     print(f"SAR: {sar_embs.shape}, Optical: {opt_embs.shape}")
 
+    lc_labels = None
+    if args.lc_labels:
+        print(f"Loading LC labels from {args.lc_labels}...")
+        with open(args.lc_labels, "r") as f:
+            lc_data = json.load(f)
+        lc_labels = lc_data["labels"]
+        num_classes = len(set(lc_labels.values()))
+        print(f"[Semantic] LC labels loaded: {len(lc_labels)} patches across {num_classes} classes")
+
     # Build per-modality retrievers
     sar_retriever = build_modality_retriever(sar_embs, sar_meta)
     opt_retriever = build_modality_retriever(opt_embs, opt_meta)
@@ -142,41 +155,46 @@ def main():
 
     # Mode 1: SAR -> SAR (same-modal)
     print("\n[1/4] SAR -> SAR (same-modal)...")
-    m, _ = evaluate_mode(sar_embs, sar_meta, sar_retriever, "sar", args.k, same_modal=False)
+    m, _ = evaluate_mode(sar_embs, sar_meta, sar_retriever, "sar", args.k, same_modal=False, lc_labels=lc_labels)
     results_table["SAR -> SAR"] = m
 
     # Mode 2: OPT -> OPT (same-modal)
     print("[2/4] OPT -> OPT (same-modal)...")
-    m, _ = evaluate_mode(opt_embs, opt_meta, opt_retriever, "optical", args.k, same_modal=False)
+    m, _ = evaluate_mode(opt_embs, opt_meta, opt_retriever, "optical", args.k, same_modal=False, lc_labels=lc_labels)
     results_table["OPT -> OPT"] = m
 
     # Mode 3: SAR -> OPT (cross-modal — no self-filtering)
     print("[3/4] SAR -> OPT (cross-modal)...")
-    m, _ = evaluate_mode(sar_embs, sar_meta, opt_retriever, "optical", args.k, same_modal=False)
+    m, _ = evaluate_mode(sar_embs, sar_meta, opt_retriever, "optical", args.k, same_modal=False, lc_labels=lc_labels)
     results_table["SAR -> OPT"] = m
 
     # Mode 4: OPT -> SAR (cross-modal — no self-filtering)
     print("[4/4] OPT -> SAR (cross-modal)...")
-    m, _ = evaluate_mode(opt_embs, opt_meta, sar_retriever, "sar", args.k, same_modal=False)
+    m, _ = evaluate_mode(opt_embs, opt_meta, sar_retriever, "sar", args.k, same_modal=False, lc_labels=lc_labels)
     results_table["OPT -> SAR"] = m
 
     # Print report
-    print("\n" + "=" * 80)
+    has_sem = (lc_labels is not None)
+    print("\n" + "=" * 90)
     print("RETRIEVAL EVALUATION REPORT")
-    print("=" * 80)
+    print("=" * 90)
     header = f"{'Mode':<20}"
     for k in args.k:
         header += f"  F1@{k:<4} R@{k:<4}"
+        if has_sem and k == 5:
+            header += "  Sem-F1@5"
     header += "    MRR     Time/q(ms)"
     print(header)
-    print("-" * 80)
+    print("-" * 90)
     for mode, m in results_table.items():
         row = f"{mode:<20}"
         for k in args.k:
             row += f"  {m[f'mean_f1@{k}']:.4f}  {m[f'mean_recall@{k}']:.4f}"
+            if has_sem and k == 5:
+                row += f"  {m.get('semantic_mean_f1@5', 0.0):.4f}"
         row += f"    {m['mrr']:.4f}  {m['time_per_query_ms']:.2f}ms"
         print(row)
-    print("=" * 80)
+    print("=" * 90)
 
     # Save results
     out_path = idx_dir / "evaluation_results.json"
