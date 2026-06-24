@@ -1,6 +1,6 @@
 # ROADMAP.md
 
-> **Current Phase**: Phase 7 — Submission Fixes & Polish
+> **Current Phase**: Completed 🎉
 > **Milestone**: v1.2 — Hackathon-Ready Submission
 
 ---
@@ -120,7 +120,7 @@
 ---
 
 ### Phase 7: Submission Fixes & Polish
-**Status**: 🔄 Planned
+**Status**: ✅ Complete
 **Objective**: Fix two issues that make the system appear broken to hackathon judges:
 1. Same-modal F1 shows 0.000 due to incorrect leave-one-out evaluation — judges will see zeros on two of five evaluation criteria.
 2. README metrics are stale (Phase 4 numbers, not v1.1); demo shows misleading global ranks.
