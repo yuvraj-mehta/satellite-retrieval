@@ -1,6 +1,6 @@
 # ROADMAP.md
 
-> **Current Phase**: Phase 10 — Semantic Evaluation (Land Cover Labels)
+> **Current Phase**: Phase 11 — Three-Modality Support (SAR + Optical RGB + Multispectral)
 > **Milestone**: v1.3 — Hackathon Finalist Polish
 
 ---
@@ -163,7 +163,7 @@
 ---
 
 ### Phase 10: Semantic Evaluation (Land Cover Labels)
-**Status**: ⬜ Planned
+**Status**: ✅ Complete
 **Objective**: Replace geographic-exact ground truth with semantic class ground truth using the SEN12MS IGBP Land Cover labels that already ship in `backend/SEN12MS-master/labels/`. Two patches are now "relevant" if they share the same dominant LC class (e.g., both Evergreen Broadleaf Forest), regardless of GPS location. This directly matches the problem statement wording: "based on semantic class". Expected to raise cross-modal F1 scores 5–10×.
 
 **Key Tasks**:
