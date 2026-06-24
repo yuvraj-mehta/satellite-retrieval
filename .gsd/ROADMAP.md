@@ -125,7 +125,7 @@
 ---
 
 ### Phase 8: React UI
-**Status**: 🔲 Planned
+**Status**: ✅ Complete
 **Objective**: Build a full-stack interactive web UI for the retrieval system. A FastAPI backend exposes the trained model as a REST API. A React (Vite) frontend lets users upload a query `.tif` image, select query/target modalities, view the Top-5 retrieved results as rendered satellite image tiles with similarity scores and match badges.
 
 **Key Tasks**:

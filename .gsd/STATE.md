@@ -1,21 +1,20 @@
 # STATE.md — Project Memory
 
 > Last Updated: 2026-06-25
-> Session: Phase 8 planned — React UI
+> Session: Phase 8 complete — Web UI
 
 ## Current Position
-- **Phase**: 8 (planned, ready for execution)
-- **Status**: 🔲 Plans written — awaiting `/execute 8`
+- **Phase**: 8 (verified)
+- **Status**: ✅ Complete and verified
 
-## Phase 8 Plans
-| Plan | Focus | Wave |
-|------|-------|------|
-| `8/1-PLAN.md` | FastAPI backend (`api/main.py`) wrapping DualEncoder + FAISS as REST API | 1 |
-| `8/2-PLAN.md` | React (Vite) scaffold + drag-and-drop upload + query hook | 2 |
-| `8/3-PLAN.md` | ResultsGrid, ImageTile, score bars, match badges, loading state, polish | 3 |
+## Last Session Summary
+Phase 8 executed successfully.
+- Restructured the workspace into `backend/` and `ui/` directories to separate concerns.
+- Implemented a FastAPI API wrapper (`backend/api/`) around the trained `DualEncoder` model and FAISS vector index.
+- Created a Vite + React application (`ui/`) with dropzone file uploading, modality selection, live latencies, and search grids.
 
 ## Next Steps
-1. `/execute 8` — implement the React UI
+1. All phases of the roadmap are successfully completed and verified! 🎉
 
 ## Phase 6 Plans
 | Plan | Focus | Wave |
