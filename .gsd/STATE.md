@@ -1,15 +1,16 @@
 # STATE.md — Project Memory
 
 > Last Updated: 2026-06-24
-> Session: Phase 6 execution complete — Milestone v1.1 Complete 🎉
+> Session: Phase 7 planned — Submission Fixes & Polish
 
 ## Current Position
-- **Phase**: Complete 🎉
-- **Status**: Milestone v1.1 COMPLETE ✅ — scientifically hardened architecture successfully implemented, trained, and evaluated.
+- **Phase**: 7 — Submission Fixes & Polish
+- **Status**: Plans written, ready for execution
 
 ## Next Steps
-1. Prepare final hackathon presentation/submission package.
-2. Clean up any workspace directories/artifacts if needed.
+1. `/execute 7` — run plans 7.1, 7.2 in order
+2. Re-run evaluation after 7.1 to get corrected same-modal scores
+3. Commit all changes for final hackathon submission
 
 ## Phase 6 Plans
 | Plan | Focus | Wave |

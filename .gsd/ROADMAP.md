@@ -1,7 +1,7 @@
 # ROADMAP.md
 
-> **Current Phase**: Completed 🎉
-> **Milestone**: v1.1 — Scientifically Hardened Submission (COMPLETE ✅)
+> **Current Phase**: Phase 7 — Submission Fixes & Polish
+> **Milestone**: v1.2 — Hackathon-Ready Submission
 
 ---
 
@@ -116,3 +116,15 @@
 **Plans**: `6/1-PLAN.md` (backbone+arch) → `6/2-PLAN.md` (data) → `6/3-PLAN.md` (eval+training)
 
 **Requirements**: SPEC Goals 3, 4, 5
+
+---
+
+### Phase 7: Submission Fixes & Polish
+**Status**: 🔄 Planned
+**Objective**: Fix two issues that make the system appear broken to hackathon judges:
+1. Same-modal F1 shows 0.000 due to incorrect leave-one-out evaluation — judges will see zeros on two of five evaluation criteria.
+2. README metrics are stale (Phase 4 numbers, not v1.1); demo shows misleading global ranks.
+
+**Plans**: `7/1-PLAN.md` (eval fix + demo fix) → `7/2-PLAN.md` (README + compare script)
+
+**Requirements**: SPEC Goals 4, 5
