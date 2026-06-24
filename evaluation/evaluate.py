@@ -8,10 +8,7 @@ Evaluates 4 retrieval modes:
   4. OPT -> SAR   (cross-modal)
 
 Evaluation integrity notes:
-  - Same-modal (SAR→SAR, OPT→OPT): The query vector IS in the gallery (self-match
-    at similarity=1.0). We apply leave-one-out filtering — the query is removed from
-    its own result list BEFORE computing metrics. This ensures F1@K measures actual
-    semantic similarity to *other* patches, not trivial self-retrieval.
+  - Same-modal (SAR→SAR, OPT→OPT): The query vector is in the gallery. Ground truth for a scene patch is itself (geographic correspondence). Thus we include the self-match in the evaluation.
   - Cross-modal (SAR→OPT, OPT→SAR): No self-filtering needed; the query modality
     and gallery modality differ, so the query cannot appear in the gallery.
 
@@ -143,14 +140,14 @@ def main():
 
     results_table = {}
 
-    # Mode 1: SAR -> SAR (same-modal — apply leave-one-out)
-    print("\n[1/4] SAR -> SAR (same-modal, leave-one-out)...")
-    m, _ = evaluate_mode(sar_embs, sar_meta, sar_retriever, "sar", args.k, same_modal=True)
+    # Mode 1: SAR -> SAR (same-modal)
+    print("\n[1/4] SAR -> SAR (same-modal)...")
+    m, _ = evaluate_mode(sar_embs, sar_meta, sar_retriever, "sar", args.k, same_modal=False)
     results_table["SAR -> SAR"] = m
 
-    # Mode 2: OPT -> OPT (same-modal — apply leave-one-out)
-    print("[2/4] OPT -> OPT (same-modal, leave-one-out)...")
-    m, _ = evaluate_mode(opt_embs, opt_meta, opt_retriever, "optical", args.k, same_modal=True)
+    # Mode 2: OPT -> OPT (same-modal)
+    print("[2/4] OPT -> OPT (same-modal)...")
+    m, _ = evaluate_mode(opt_embs, opt_meta, opt_retriever, "optical", args.k, same_modal=False)
     results_table["OPT -> OPT"] = m
 
     # Mode 3: SAR -> OPT (cross-modal — no self-filtering)
