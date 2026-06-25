@@ -44,7 +44,7 @@ export default function ImageTile({
           <div className="score-container">
             <div className="score-header">
               <span className="score-name">Similarity</span>
-              <span className="score-val">{score.toFixed(4)}</span>
+              <span className="score-val">{(score * 100).toFixed(1)}% <span style={{ opacity: 0.5, fontSize: "11px", marginLeft: "4px" }}>({score.toFixed(3)})</span></span>
             </div>
             <div className="score-bar-bg">
               <div

@@ -213,3 +213,89 @@ body {
   color: rgba(255, 255, 255, 0.85);
 }
 
+/* Collapsible Architecture View & Guide styling */
+.info-guide {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 24px;
+  width: 100%;
+  max-width: 1000px;
+  border-radius: 12px;
+  margin: 0 auto;
+}
+
+.info-icon {
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.info-text {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.info-text strong {
+  color: var(--text);
+}
+
+.arch-toggle-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: -8px;
+}
+
+.arch-toggle-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+}
+
+.arch-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+
+.arch-toggle-btn.active {
+  background: rgba(14, 165, 233, 0.08);
+  border-color: rgba(14, 165, 233, 0.3);
+  color: var(--accent);
+}
+
+.chevron {
+  font-size: 8px;
+  transition: transform 0.3s ease;
+}
+
+.chevron.up {
+  transform: rotate(180deg);
+}
+
+.arch-wrapper {
+  width: 100%;
+  animation: slideInDown 0.4s ease-out both;
+}
+
+/* Layout Responsiveness Adjustments */
+@media (max-width: 768px) {
+  .app-container {
+    padding: 20px 12px;
+    gap: 20px;
+  }
+}
+
+

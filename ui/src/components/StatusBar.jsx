@@ -33,7 +33,11 @@ export default function StatusBar({ retrievalMs, queryModality, targetModality, 
       <div className="status-indicator">
         <span className={`status-dot ${connected ? "connected" : "offline"}`} />
         <span className="status-text">
-          {checking ? "Checking Engine..." : connected ? "FAISS Engine Online" : "Engine Offline"}
+          {checking ? "Checking Engine..." : connected ? "FAISS Engine Online" : (
+            <span className="offline-warning" style={{ color: "#ef4444", textTransform: "none" }}>
+              Engine Offline — run: <code style={{ background: "rgba(0, 0, 0, 0.3)", padding: "2px 6px", borderRadius: "4px", fontFamily: "var(--font-mono)", color: "#f8fafc" }}>bash backend/start.sh</code>
+            </span>
+          )}
         </span>
       </div>
       

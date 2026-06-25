@@ -12,7 +12,8 @@ Run the following command in your local terminal from the repository root (`/Use
 ```bash
 zip -r codebase.zip backend/ \
   -x "backend/data/*" \
-  -x "backend/outputs/*" \
+  -x "backend/outputs/checkpoints/*" \
+  -x "backend/outputs/*.png" \
   -x "backend/__pycache__/*" \
   -x "backend/*/__pycache__/*" \
   -x "backend/*/*/__pycache__/*"
@@ -20,11 +21,11 @@ zip -r codebase.zip backend/ \
 
 ---
 
-## Step 2: Upload Files to Google Drive
-1. Go to [Kaggle](https://www.kaggle.com/), log in, navigate to **Settings** under your profile, and click **Create New Token**. This downloads a file named `kaggle.json`.
-2. Open [Google Drive](https://drive.google.com/).
-3. Create a folder named `satellite-retrieval`.
-4. Upload `codebase.zip` and your `kaggle.json` file into this folder.
+## Step 2: Upload Codebase to Google Drive
+1. Open [Google Drive](https://drive.google.com/).
+2. Create a folder named `satellite-retrieval`.
+3. Upload `codebase.zip` into this folder.
+*(Note: You do not need to upload `kaggle.json` to Google Drive; we will upload it directly inside the Colab notebook.)*
 
 ---
 
@@ -38,30 +39,76 @@ drive.mount('/content/drive')
 ```
 
 ### Cell 2: Setup Kaggle Credentials
-Copy `kaggle.json` from Google Drive to the local home directory and configure permissions:
+Run this Python cell to configure your credentials. It validates the format of any existing key and will automatically prompt for a fresh upload if the key is missing, invalid, or corrupted:
 
-```bash
-%%bash
-mkdir -p ~/.kaggle
-cp /content/drive/MyDrive/satellite-retrieval/kaggle.json ~/.kaggle/
-chmod 600 ~/.kaggle/kaggle.json
+```python
+from google.colab import files
+import os
+import json
+
+def check_valid_kaggle_json(filepath):
+    if not os.path.exists(filepath):
+        return False
+    try:
+        with open(filepath, 'r') as f:
+            creds = json.load(f)
+        return 'username' in creds and 'key' in creds
+    except Exception:
+        return False
+
+target_path = '/root/.kaggle/kaggle.json'
+
+if not check_valid_kaggle_json(target_path):
+    # If the file exists but is invalid, clean it up to allow re-uploading
+    if os.path.exists(target_path):
+        print("Existing kaggle.json is invalid or corrupted. Deleting it to trigger re-upload...")
+        os.remove(target_path)
+        
+    print("Please upload your kaggle.json file (downloaded from Kaggle Settings > API > Create New Token):")
+    uploaded = files.upload()
+    
+    filename = list(uploaded.keys())[0]
+    if filename != 'kaggle.json':
+        raise ValueError(
+            f"Expected 'kaggle.json' but received '{filename}'.\n\n"
+            "HOW TO GET THE CORRECT FILE:\n"
+            "1. Go to https://www.kaggle.com/ and log in.\n"
+            "2. Click your Profile picture (top-right) -> Settings.\n"
+            "3. Scroll down to the 'API' section and click 'Create New Token'.\n"
+            "4. This downloads 'kaggle.json' (~100 bytes) to your computer. Upload THAT file here."
+        )
+        
+    try:
+        creds = json.loads(uploaded['kaggle.json'].decode('utf-8'))
+        if 'username' not in creds or 'key' not in creds:
+            raise ValueError()
+    except Exception:
+        raise ValueError("Invalid kaggle.json format. The file must contain your Kaggle 'username' and 'key'.")
+        
+    os.makedirs('/root/.kaggle', exist_ok=True)
+    with open(target_path, 'wb') as f:
+        f.write(uploaded['kaggle.json'])
+    os.chmod(target_path, 0o600)
+    print("Kaggle credentials configured successfully!")
+else:
+    print("Valid Kaggle credentials already configured.")
 ```
 
 ### Cell 3: Extract Codebase and Download Dataset
-Extract the codebase zip file, and download the `sen12ms-subset` dataset directly from Kaggle:
+Extract the codebase zip file, and download the `sen12ms-subset` dataset directly from Kaggle. The `-o` flag is passed to `unzip` to force overwriting existing files without interactive prompts:
 
 ```bash
 %%bash
-# 1. Create target directory and extract codebase
+# 1. Create target directory and extract codebase (overwrite if exists)
 mkdir -p /content/project
-unzip -q /content/drive/MyDrive/satellite-retrieval/codebase.zip -d /content/project
+unzip -o -q /content/drive/MyDrive/satellite-retrieval/codebase.zip -d /content/project
 
 # 2. Download dataset from Kaggle (2.4 GB — takes ~1 minute)
 kaggle datasets download -d bhaveshbhardwaj7/sen12ms-subset
 
-# 3. Extract dataset directly into backend/data/
+# 3. Extract dataset directly into backend/data/ (overwrite if exists)
 mkdir -p /content/project/backend/data
-unzip -q sen12ms-subset.zip -d /content/project/backend/data/
+unzip -o -q sen12ms-subset.zip -d /content/project/backend/data/
 
 # 4. Verify directory structure
 ls -l /content/project/backend/data/sen12ms-subset

@@ -19,12 +19,14 @@ class SEN12MSHardNegDataset(SEN12MSDataset):
         sar_bands=None,
         optical_bands=None,
         normalize=True,
+        cache_in_memory=True,
     ):
         super().__init__(
             root_dir=root_dir,
             sar_bands=sar_bands,
             optical_bands=optical_bands,
             normalize=normalize,
+            cache_in_memory=cache_in_memory,
         )
         
         self.lc_labels_path = Path(lc_labels_path)

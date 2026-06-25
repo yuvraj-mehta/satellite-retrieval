@@ -1,7 +1,20 @@
 import React from "react";
 import "./ArchitectureDiagram.css";
 
-export default function ArchitectureDiagram() {
+export default function ArchitectureDiagram({ queryModality = "sar", targetModality = "optical" }) {
+  const getModalityLabel = (modality) => {
+    switch (modality) {
+      case "sar":
+        return "Sentinel-1 (SAR)";
+      case "optical":
+        return "Sentinel-2 (Optical)";
+      case "optical_rgb":
+        return "Sentinel-2 (Optical RGB)";
+      default:
+        return modality.toUpperCase();
+    }
+  };
+
   return (
     <div className="architecture-section glass">
       <div className="arch-header">
@@ -16,14 +29,14 @@ export default function ArchitectureDiagram() {
             <span className="node-icon">🛰️</span>
             <div className="node-text">
               <strong>Query Scene</strong>
-              <span>Sentinel-1 (SAR)</span>
+              <span>{getModalityLabel(queryModality)}</span>
             </div>
           </div>
           <div className="arch-node target-node">
             <span className="node-icon">🌍</span>
             <div className="node-text">
               <strong>Target Database</strong>
-              <span>Sentinel-2 (Optical)</span>
+              <span>{getModalityLabel(targetModality)}</span>
             </div>
           </div>
         </div>

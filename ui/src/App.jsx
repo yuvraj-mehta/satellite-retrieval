@@ -13,6 +13,7 @@ export default function App() {
   const [targetModality, setTargetModality] = useState("optical");
   const [topK, setTopK] = useState(5);
   const [activeTab, setActiveTab] = useState("retrieval");
+  const [showArchitecture, setShowArchitecture] = useState(false);
 
   const {
     results,
@@ -64,7 +65,28 @@ export default function App() {
 
       {activeTab === "retrieval" && (
         <>
-          <ArchitectureDiagram />
+          <div className="info-guide glass">
+            <span className="info-icon">💡</span>
+            <p className="info-text">
+              <strong>Quick Start Guide:</strong> Choose your modalities below, or click <em>"Load Sample"</em> in the upload panel to populate a valid satellite patch instantly. Click <em>"Run Cross-Modal Retrieval"</em> to query the FAISS index.
+            </p>
+          </div>
+
+          <div className="arch-toggle-container">
+            <button 
+              className={`arch-toggle-btn ${showArchitecture ? "active" : ""}`}
+              onClick={() => setShowArchitecture(!showArchitecture)}
+            >
+              <span>{showArchitecture ? "Hide System Architecture" : "Show System Architecture"}</span>
+              <span className={`chevron ${showArchitecture ? "up" : "down"}`}>▼</span>
+            </button>
+          </div>
+
+          {showArchitecture && (
+            <div className="arch-wrapper">
+              <ArchitectureDiagram queryModality={queryModality} targetModality={targetModality} />
+            </div>
+          )}
 
           <UploadPanel
             onSearch={handleSearch}
@@ -89,6 +111,7 @@ export default function App() {
               queryModality={queryModality}
               targetModality={targetModality}
               retrievalMs={retrievalMs}
+              topK={topK}
             />
           )}
         </>

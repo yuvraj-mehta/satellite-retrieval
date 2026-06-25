@@ -48,6 +48,30 @@ export default function BenchmarkDashboard() {
   const modes = ['SAR -> SAR', 'OPT -> OPT', 'SAR -> OPT', 'OPT -> SAR'];
   const hasSemantic = data?.has_semantic;
 
+  // Calculate dynamic max references from actual data to scale the bars appropriately
+  let maxF1Ref = 0.1;
+  let maxSemF1Ref = 0.1;
+  let totalLatency = 0;
+  let activeModesCount = 0;
+
+  modes.forEach((m) => {
+    const modeData = data?.[m] || {};
+    const f1_5 = modeData['mean_f1@5'] || 0;
+    const sem_f1_5 = modeData['semantic_mean_f1@5'] || 0;
+    const latency = modeData['time_per_query_ms'];
+
+    if (f1_5 > maxF1Ref) maxF1Ref = f1_5;
+    if (sem_f1_5 > maxSemF1Ref) maxSemF1Ref = sem_f1_5;
+    if (latency !== undefined && latency !== null) {
+      totalLatency += latency;
+      activeModesCount++;
+    }
+  });
+
+  maxF1Ref = Math.min(maxF1Ref * 1.1, 1.0);
+  maxSemF1Ref = Math.min(maxSemF1Ref * 1.1, 1.0);
+  const avgLatency = activeModesCount > 0 ? totalLatency / activeModesCount : 0;
+
   return (
     <div className="benchmark-section">
       <div className="benchmark-header">
@@ -69,10 +93,6 @@ export default function BenchmarkDashboard() {
           
           const isCrossModal = mode.includes('SAR -> OPT') || mode.includes('OPT -> SAR');
           const accentColor = isCrossModal ? '#00d4ff' : '#00ff9d';
-          
-          // Reference max values to compute bar percentages
-          const maxF1Ref = 0.4;
-          const maxSemF1Ref = 0.8;
           
           const geoPercentage = Math.min((f1_5 / maxF1Ref) * 100, 100);
           const semPercentage = Math.min((sem_f1_5 / maxSemF1Ref) * 100, 100);
@@ -155,7 +175,9 @@ export default function BenchmarkDashboard() {
       </div>
 
       <div className="latency-hero-card">
-        <div className="latency-hero">&lt; 0.1ms</div>
+        <div className="latency-hero">
+          {avgLatency > 0 ? `${avgLatency.toFixed(3)}ms` : "< 0.1ms"}
+        </div>
         <p className="latency-label">Average Retrieval Latency per Query</p>
         <p className="latency-subtext">Sub-millisecond FAISS retrieval — 1,167-patch index</p>
       </div>

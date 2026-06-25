@@ -40,7 +40,7 @@ def startup_event():
     try:
         RetrieverService.load(
             checkpoint_path="outputs/checkpoints/best_model.pt",
-            index_dir="outputs/index_trained"
+            index_dir="outputs/index"
         )
         print("[API] Model and index successfully loaded.")
     except Exception as e:
@@ -112,7 +112,7 @@ async def query(
     query_modality = query_modality.lower()
     target_modality = target_modality.lower()
 
-    valid_modalities = ["sar", "optical", "optical_rgb"]
+    valid_modalities = ["sar", "optical", "optical_rgb", "both"]
     if query_modality not in valid_modalities:
         raise HTTPException(status_code=400, detail=f"Invalid query_modality. Must be one of {valid_modalities}.")
     if target_modality not in valid_modalities:
@@ -162,10 +162,13 @@ async def query(
         # Prepare results response
         response_results = []
         for r in results:
-            r_path = Path(r["path"])
+            r_path_str = r["path"]
+            if r_path_str.startswith("backend/"):
+                r_path_str = r_path_str[len("backend/"):]
+            r_path = Path(r_path_str)
             if not r_path.exists():
-                # Fallback to backend-relative path if index paths are absolute on build machine
-                r_path = backend_dir / r["path"]
+                # Fallback to backend-relative path
+                r_path = backend_dir / r_path_str
             
             # Load result image
             r_bands = None if r["modality"] == "sar" else [3, 7, 10, 11]
