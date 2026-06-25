@@ -121,6 +121,11 @@ class SEN12MSDataset(Dataset):
                 missing_pairs += 1
 
         print(f"Found {len(self.samples)} paired samples")
+        if len(self.samples) == 0:
+            raise FileNotFoundError(
+                f"No paired SEN12MS samples found in '{self.root_dir}'. "
+                "Please verify that the directory exists and contains the expected 'ROIs2017_winter_s1' and 'ROIs2017_winter_s2' subdirectories."
+            )
         if missing_pairs > 0:
             print(f"WARNING: {missing_pairs} S1 files had no matching S2 file")
 
