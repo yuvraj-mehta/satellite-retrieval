@@ -31,6 +31,8 @@ def train_one_epoch(model, loader, optimizer, criterion, device, accum_steps, us
     total_loss = 0.0
     optimizer.zero_grad()
 
+    is_xla = (device.type == "xla")
+
     for step, batch in enumerate(loader):
         sar = batch["sar"].to(device)
         opt = batch["optical"].to(device)
@@ -47,7 +49,11 @@ def train_one_epoch(model, loader, optimizer, criterion, device, accum_steps, us
 
         if (step + 1) % accum_steps == 0 or (step + 1) == len(loader):
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-            optimizer.step()
+            if is_xla:
+                import torch_xla.core.xla_model as xm
+                xm.optimizer_step(optimizer)
+            else:
+                optimizer.step()
             optimizer.zero_grad()
 
         total_loss += loss.item() * accum_steps
