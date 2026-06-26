@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import './AnalyticsPage.css';
 
 export default function AnalyticsPage() {
   const [data, setData] = useState({
@@ -35,61 +34,61 @@ export default function AnalyticsPage() {
   const { cross_modal_sar_to_opt: metrics, by_modality: modes } = data;
 
   return (
-    <div className="analytics-page">
-      <div className="analytics-header">
+    <div className="flex flex-col gap-6">
+      <div className="flex justify-between items-start">
         <div>
-          <h2>Analytics</h2>
-          <p className="subtitle">Performance insights and system analytics</p>
+          <h2 className="text-2xl text-white mb-1">Analytics</h2>
+          <p className="text-text-secondary text-sm">Performance insights and system analytics</p>
         </div>
-        <div className="header-actions">
-          <div className="date-pill">May 15 – May 21, 2024</div>
+        <div className="flex items-center gap-3">
+          <div className="bg-bg-surface-2 border border-border px-4 py-2 rounded-full text-sm text-text-primary">May 15 – May 21, 2024</div>
           <button className="btn-ghost">Export Report</button>
         </div>
       </div>
 
-      <div className="kpi-grid">
+      <div className="grid grid-cols-6 gap-4">
         <div className="kpi-card">
-          <div className="kpi-title">Total Queries</div>
-          <div className="kpi-value">{data.total_pairs}</div>
-          <div className="kpi-trend text-green">+4.2% vs prior</div>
+          <div className="text-text-secondary text-[0.85rem] font-medium mb-1">Total Queries</div>
+          <div className="text-text-primary text-2xl font-bold mb-1">{data.total_pairs}</div>
+          <div className="text-[0.75rem] mt-1 text-accent-green">+4.2% vs prior</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-title">Avg Retrieval Time</div>
-          <div className="kpi-value">{data.latency_ms?.toFixed(3)} ms</div>
-          <div className="kpi-trend text-green">-1.2ms vs prior</div>
+          <div className="text-text-secondary text-[0.85rem] font-medium mb-1">Avg Retrieval Time</div>
+          <div className="text-text-primary text-2xl font-bold mb-1">{data.latency_ms?.toFixed(3)} ms</div>
+          <div className="text-[0.75rem] mt-1 text-accent-green">-1.2ms vs prior</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-title">Recall@5 (Cross-Modal)</div>
-          <div className="kpi-value">{(metrics.recall_at_5 * 100).toFixed(1)}%</div>
-          <div className="kpi-trend text-green">+2.1% vs prior</div>
+          <div className="text-text-secondary text-[0.85rem] font-medium mb-1">Recall@5 (Cross-Modal)</div>
+          <div className="text-text-primary text-2xl font-bold mb-1">{(metrics.recall_at_5 * 100).toFixed(1)}%</div>
+          <div className="text-[0.75rem] mt-1 text-accent-green">+2.1% vs prior</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-title">Recall@10 (Cross-Modal)</div>
-          <div className="kpi-value">{(metrics.recall_at_10 * 100).toFixed(1)}%</div>
-          <div className="kpi-trend text-green">+1.5% vs prior</div>
+          <div className="text-text-secondary text-[0.85rem] font-medium mb-1">Recall@10 (Cross-Modal)</div>
+          <div className="text-text-primary text-2xl font-bold mb-1">{(metrics.recall_at_10 * 100).toFixed(1)}%</div>
+          <div className="text-[0.75rem] mt-1 text-accent-green">+1.5% vs prior</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-title">F1@5 (Cross-Modal)</div>
-          <div className="kpi-value">{(metrics.f1_at_5 * 100).toFixed(1)}%</div>
-          <div className="kpi-trend text-green">+3.1% vs prior</div>
+          <div className="text-text-secondary text-[0.85rem] font-medium mb-1">F1@5 (Cross-Modal)</div>
+          <div className="text-text-primary text-2xl font-bold mb-1">{(metrics.f1_at_5 * 100).toFixed(1)}%</div>
+          <div className="text-[0.75rem] mt-1 text-accent-green">+3.1% vs prior</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-title">MRR (Cross-Modal)</div>
-          <div className="kpi-value">{(metrics.mrr * 100).toFixed(1)}%</div>
-          <div className="kpi-trend text-green">+1.8% vs prior</div>
+          <div className="text-text-secondary text-[0.85rem] font-medium mb-1">MRR (Cross-Modal)</div>
+          <div className="text-text-primary text-2xl font-bold mb-1">{(metrics.mrr * 100).toFixed(1)}%</div>
+          <div className="text-[0.75rem] mt-1 text-accent-green">+1.8% vs prior</div>
         </div>
       </div>
 
-      <div className="charts-row">
-        <div className="glass-card performance-chart-card">
-          <h3>Retrieval Performance Over Time</h3>
-          <div className="chart-legend">
-            <span className="legend-item"><span className="dot dot-r5"></span> Recall@5</span>
-            <span className="legend-item"><span className="dot dot-r10"></span> Recall@10</span>
-            <span className="legend-item"><span className="dot dot-f1"></span> F1@5</span>
-            <span className="legend-item"><span className="dot dot-mrr"></span> MRR</span>
+      <div className="flex gap-6">
+        <div className="glass-card flex-[6]">
+          <h3 className="text-base text-white mb-4">Retrieval Performance Over Time</h3>
+          <div className="flex gap-4 mb-4">
+            <span className="flex items-center gap-2 text-xs text-text-secondary"><span className="w-2.5 h-2.5 rounded-full bg-accent-cyan"></span> Recall@5</span>
+            <span className="flex items-center gap-2 text-xs text-text-secondary"><span className="w-2.5 h-2.5 rounded-full bg-accent-blue"></span> Recall@10</span>
+            <span className="flex items-center gap-2 text-xs text-text-secondary"><span className="w-2.5 h-2.5 rounded-full bg-accent-violet"></span> F1@5</span>
+            <span className="flex items-center gap-2 text-xs text-text-secondary"><span className="w-2.5 h-2.5 rounded-full bg-accent-amber"></span> MRR</span>
           </div>
-          <div className="chart-container">
+          <div className="w-full">
             <svg viewBox="0 0 600 200" width="100%" height="200">
               {/* Grid lines */}
               {[0, 50, 100, 150].map(y => (
@@ -114,9 +113,9 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        <div className="glass-card modality-chart-card">
-          <h3>Performance by Modality Pair</h3>
-          <div className="chart-container">
+        <div className="glass-card flex-[4]">
+          <h3 className="text-base text-white mb-4">Performance by Modality Pair</h3>
+          <div className="w-full">
             <svg viewBox="0 0 300 200" width="100%" height="200">
               <line x1="30" y1="160" x2="280" y2="160" stroke="var(--border)" />
               {/* SAR->SAR */}
@@ -143,26 +142,26 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      <div className="distribution-row">
-        <div className="glass-card donut-card">
-          <h3>Query Distribution</h3>
-          <div className="donut-container">
+      <div className="flex gap-6">
+        <div className="glass-card flex-1 flex flex-col items-center">
+          <h3 className="text-base text-white mb-4 w-full text-left">Query Distribution</h3>
+          <div className="flex flex-col items-center gap-4">
             <svg viewBox="0 0 200 200" width="160" height="160">
               <circle cx="100" cy="100" r="80" fill="none" stroke="var(--accent-cyan)" strokeWidth="20" strokeDasharray="251 251" />
               <circle cx="100" cy="100" r="80" fill="none" stroke="var(--accent-violet)" strokeWidth="20" strokeDasharray="251 251" strokeDashoffset="251" />
               <text x="100" y="95" fill="white" fontSize="24" fontWeight="bold" textAnchor="middle">1,167</text>
               <text x="100" y="115" fill="var(--text-muted)" fontSize="12" textAnchor="middle">Total Queries</text>
             </svg>
-            <div className="donut-legend">
-              <div className="legend-item"><span className="dot dot-sar"></span> SAR (50%)</div>
-              <div className="legend-item"><span className="dot dot-opt"></span> Optical (50%)</div>
+            <div className="flex gap-4">
+              <div className="flex items-center gap-2 text-xs text-text-secondary"><span className="w-2.5 h-2.5 rounded-full bg-accent-violet"></span> SAR (50%)</div>
+              <div className="flex items-center gap-2 text-xs text-text-secondary"><span className="w-2.5 h-2.5 rounded-full bg-accent-cyan"></span> Optical (50%)</div>
             </div>
           </div>
         </div>
 
-        <div className="glass-card histogram-card">
-          <h3>Retrieval Latency Distribution</h3>
-          <div className="chart-container">
+        <div className="glass-card flex-1">
+          <h3 className="text-base text-white mb-4">Retrieval Latency Distribution</h3>
+          <div className="w-full">
             <svg viewBox="0 0 300 150" width="100%" height="150">
               <line x1="30" y1="120" x2="280" y2="120" stroke="var(--border)" />
               <rect x="50" y="90" width="30" height="30" fill="var(--accent-violet-dim)" stroke="var(--accent-violet)" />
@@ -179,94 +178,62 @@ export default function AnalyticsPage() {
             </svg>
           </div>
         </div>
-
-        <div className="glass-card metrics-card">
-          <h3>Index & System Metrics</h3>
-          <table className="data-table">
-            <tbody>
-              <tr>
-                <td>FAISS Index Type</td>
-                <td><strong>IndexFlatIP</strong></td>
-              </tr>
-              <tr>
-                <td>Total Vectors</td>
-                <td><strong>{data.total_pairs}</strong></td>
-              </tr>
-              <tr>
-                <td>Index Build Time</td>
-                <td><strong>2.14 s</strong></td>
-              </tr>
-              <tr>
-                <td>Index Size (Disk)</td>
-                <td><strong>18.7 MB</strong></td>
-              </tr>
-              <tr>
-                <td>Inference Device</td>
-                <td><strong>{device}</strong></td>
-              </tr>
-              <tr>
-                <td>System Uptime</td>
-                <td><strong className="text-green">99.5%</strong></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
       </div>
 
-      <div className="bottom-row">
-        <div className="glass-card table-card full-width">
-          <h3>Top Performing Patches</h3>
+      <div className="flex">
+        <div className="glass-card w-full">
+          <h3 className="text-base text-white mb-4">Top Performing Patches</h3>
           <table className="data-table">
             <thead>
               <tr>
-                <th>Rank</th>
-                <th>Query Patch</th>
-                <th>Query Modality</th>
-                <th>Matched Patch</th>
-                <th>Target Modality</th>
-                <th>Similarity Score</th>
+                <th className="py-2 px-3">Rank</th>
+                <th className="py-2 px-3">Query Patch</th>
+                <th className="py-2 px-3">Query Modality</th>
+                <th className="py-2 px-3">Matched Patch</th>
+                <th className="py-2 px-3">Target Modality</th>
+                <th className="py-2 px-3">Similarity Score</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>#1</td>
-                <td>Scene 21 / Patch 102</td>
-                <td><span className="badge badge-sar">SAR</span></td>
-                <td>Scene 21 / Patch 102</td>
-                <td><span className="badge badge-optical">OPTICAL</span></td>
-                <td className="score-excellent">0.9841</td>
+                <td className="py-2 px-3">#1</td>
+                <td className="py-2 px-3">Scene 21 / Patch 102</td>
+                <td className="py-2 px-3"><span className="badge badge-sar">SAR</span></td>
+                <td className="py-2 px-3">Scene 21 / Patch 102</td>
+                <td className="py-2 px-3"><span className="badge badge-optical">OPTICAL</span></td>
+                <td className="py-2 px-3 text-accent-green font-bold">0.9841</td>
               </tr>
               <tr>
-                <td>#2</td>
-                <td>Scene 22 / Patch 45</td>
-                <td><span className="badge badge-optical">OPTICAL</span></td>
-                <td>Scene 22 / Patch 45</td>
-                <td><span className="badge badge-sar">SAR</span></td>
-                <td className="score-excellent">0.9712</td>
+                <td className="py-2 px-3">#2</td>
+                <td className="py-2 px-3">Scene 22 / Patch 45</td>
+                <td className="py-2 px-3"><span className="badge badge-optical">OPTICAL</span></td>
+                <td className="py-2 px-3">Scene 22 / Patch 45</td>
+                <td className="py-2 px-3"><span className="badge badge-sar">SAR</span></td>
+                <td className="py-2 px-3 text-accent-green font-bold">0.9712</td>
               </tr>
               <tr>
-                <td>#3</td>
-                <td>Scene 21 / Patch 88</td>
-                <td><span className="badge badge-sar">SAR</span></td>
-                <td>Scene 21 / Patch 88</td>
-                <td><span className="badge badge-optical">OPTICAL</span></td>
-                <td className="score-excellent">0.9655</td>
+                <td className="py-2 px-3">#3</td>
+                <td className="py-2 px-3">Scene 21 / Patch 88</td>
+                <td className="py-2 px-3"><span className="badge badge-sar">SAR</span></td>
+                <td className="py-2 px-3">Scene 21 / Patch 88</td>
+                <td className="py-2 px-3"><span className="badge badge-optical">OPTICAL</span></td>
+                <td className="py-2 px-3 text-accent-green font-bold">0.9655</td>
               </tr>
               <tr>
-                <td>#4</td>
-                <td>Scene 22 / Patch 112</td>
-                <td><span className="badge badge-sar">SAR</span></td>
-                <td>Scene 22 / Patch 112</td>
-                <td><span className="badge badge-optical">OPTICAL</span></td>
-                <td className="score-excellent">0.9540</td>
+                <td className="py-2 px-3">#4</td>
+                <td className="py-2 px-3">Scene 22 / Patch 112</td>
+                <td className="py-2 px-3"><span className="badge badge-sar">SAR</span></td>
+                <td className="py-2 px-3">Scene 22 / Patch 112</td>
+                <td className="py-2 px-3"><span className="badge badge-optical">OPTICAL</span></td>
+                <td className="py-2 px-3 text-accent-green font-bold">0.9540</td>
               </tr>
               <tr>
-                <td>#5</td>
-                <td>Scene 21 / Patch 33</td>
-                <td><span className="badge badge-optical">OPTICAL</span></td>
-                <td>Scene 21 / Patch 33</td>
-                <td><span className="badge badge-sar">SAR</span></td>
-                <td className="score-excellent">0.9422</td>
+                <td className="py-2 px-3">#5</td>
+                <td className="py-2 px-3">Scene 21 / Patch 33</td>
+                <td className="py-2 px-3"><span className="badge badge-optical">OPTICAL</span></td>
+                <td className="py-2 px-3">Scene 21 / Patch 33</td>
+                <td className="py-2 px-3"><span className="badge badge-sar">SAR</span></td>
+                <td className="py-2 px-3 text-accent-green font-bold">0.9422</td>
               </tr>
             </tbody>
           </table>

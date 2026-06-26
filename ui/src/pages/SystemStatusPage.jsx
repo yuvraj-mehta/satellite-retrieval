@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import './SystemStatusPage.css';
 
 export default function SystemStatusPage() {
   const FALLBACK = {
@@ -44,13 +43,13 @@ export default function SystemStatusPage() {
   const isHealthy = status.overall === 'healthy';
 
   return (
-    <div className="system-status-page">
-      <div className="system-header">
+    <div className="flex flex-col gap-6">
+      <div className="flex justify-between items-start">
         <div>
-          <h2>System Status</h2>
-          <p className="subtitle">Real-time infrastructure health and service monitoring</p>
+          <h2 className="text-2xl text-white mb-1">System Status</h2>
+          <p className="text-text-secondary text-sm">Real-time infrastructure health and service monitoring</p>
         </div>
-        <div className="header-actions">
+        <div className="flex items-center gap-3">
           <span className={`badge ${isHealthy ? 'badge-online' : 'badge-error'}`}>
             System: {isHealthy ? 'Operational' : 'Degraded'}
           </span>
@@ -58,52 +57,52 @@ export default function SystemStatusPage() {
         </div>
       </div>
 
-      <div className="kpi-grid">
+      <div className="grid grid-cols-6 gap-4">
         <div className="kpi-card">
-          <div className="kpi-title">Overall Status</div>
-          <div className={`kpi-value ${isHealthy ? 'text-green' : 'text-amber'}`}>
+          <div className="text-text-secondary text-[0.85rem] font-medium mb-1">Overall Status</div>
+          <div className={`text-2xl font-bold mb-1 ${isHealthy ? 'text-accent-green' : 'text-accent-amber'}`}>
             {isHealthy ? 'Healthy' : 'Degraded'}
           </div>
-          <div className="kpi-subtitle">Last check: {lastCheck}</div>
+          <div className="text-text-muted text-xs">Last check: {lastCheck}</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-title">Uptime</div>
-          <div className="kpi-value">99.98%</div>
-          <div className="kpi-subtitle">Last 30 days</div>
+          <div className="text-text-secondary text-[0.85rem] font-medium mb-1">Uptime</div>
+          <div className="text-text-primary text-2xl font-bold mb-1">{formatUptime(status.uptime_seconds)}</div>
+          <div className="text-text-muted text-xs">Since last restart</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-title">Avg Response Time</div>
-          <div className="kpi-value">~14.2 ms</div>
-          <div className="kpi-subtitle">Global average</div>
+          <div className="text-text-secondary text-[0.85rem] font-medium mb-1">Avg Response Time</div>
+          <div className="text-text-primary text-2xl font-bold mb-1">~14.2 ms</div>
+          <div className="text-text-muted text-xs">Global average</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-title">Total Services</div>
-          <div className="kpi-value">5 / 5</div>
-          <div className="kpi-subtitle">Online / Total</div>
+          <div className="text-text-secondary text-[0.85rem] font-medium mb-1">Total Services</div>
+          <div className="text-text-primary text-2xl font-bold mb-1">5 / 5</div>
+          <div className="text-text-muted text-xs">Online / Total</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-title">Active Users</div>
-          <div className="kpi-value">1</div>
-          <div className="kpi-subtitle">Current session</div>
+          <div className="text-text-secondary text-[0.85rem] font-medium mb-1">Active Users</div>
+          <div className="text-text-primary text-2xl font-bold mb-1">1</div>
+          <div className="text-text-muted text-xs">Current session</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-title">System Load</div>
-          <div className="kpi-value">32%</div>
-          <div className="kpi-subtitle">Normal usage</div>
+          <div className="text-text-secondary text-[0.85rem] font-medium mb-1">System Load</div>
+          <div className="text-text-primary text-2xl font-bold mb-1">32%</div>
+          <div className="text-text-muted text-xs">Normal usage</div>
         </div>
       </div>
 
-      <div className="status-row">
-        <div className="glass-card services-card">
-          <h3>Service Health</h3>
-          <table className="data-table">
+      <div className="flex gap-6">
+        <div className="glass-card flex-[4]">
+          <h3 className="text-base text-white mb-4">Service Health</h3>
+          <table className="data-table w-full text-left">
             <thead>
               <tr>
-                <th>Service</th>
-                <th>Status</th>
-                <th>Uptime (7d)</th>
-                <th>Response Time</th>
-                <th>Last Check</th>
+                <th className="py-2 px-3">Service</th>
+                <th className="py-2 px-3">Status</th>
+                <th className="py-2 px-3">Uptime (7d)</th>
+                <th className="py-2 px-3">Response Time</th>
+                <th className="py-2 px-3">Last Check</th>
               </tr>
             </thead>
             <tbody>
@@ -112,15 +111,15 @@ export default function SystemStatusPage() {
                 const srvName = key.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
                 return (
                   <tr key={key}>
-                    <td><strong>{srvName}</strong></td>
-                    <td>
+                    <td className="py-2 px-3"><strong className="text-white">{srvName}</strong></td>
+                    <td className="py-2 px-3">
                       <span className={`badge ${healthy ? 'badge-online' : 'badge-error'}`}>
                         {healthy ? 'Healthy' : 'Degraded'}
                       </span>
                     </td>
-                    <td>{healthy ? '100%' : '98.5%'}</td>
-                    <td>{srv.response_ms} ms</td>
-                    <td className="text-muted">{lastCheck}</td>
+                    <td className="py-2 px-3">{healthy ? '100%' : '98.5%'}</td>
+                    <td className="py-2 px-3">{srv.response_ms} ms</td>
+                    <td className="py-2 px-3 text-text-muted">{lastCheck}</td>
                   </tr>
                 );
               })}
@@ -128,9 +127,9 @@ export default function SystemStatusPage() {
           </table>
         </div>
 
-        <div className="glass-card load-card">
-          <h3>System Load Over Time</h3>
-          <div className="chart-container">
+        <div className="glass-card flex-[3.5]">
+          <h3 className="text-base text-white mb-4">System Load Over Time</h3>
+          <div className="w-full">
             <svg viewBox="0 0 300 150" width="100%" height="150">
               {/* CPU */}
               <path d="M0,150 L0,120 Q50,140 100,100 T200,80 T300,110 L300,150 Z" fill="rgba(124, 58, 237, 0.1)" />
@@ -144,30 +143,30 @@ export default function SystemStatusPage() {
           </div>
         </div>
 
-        <div className="glass-card resource-card">
-          <h3>Resource Utilization</h3>
-          <div className="gauges-container">
-            <div className="gauge">
-              <svg viewBox="0 0 100 100">
+        <div className="glass-card flex-[2.5]">
+          <h3 className="text-base text-white mb-4">Resource Utilization</h3>
+          <div className="flex justify-between items-center mt-5">
+            <div className="w-[30%] flex flex-col items-center gap-2 text-xs text-text-secondary">
+              <svg viewBox="0 0 100 100" className="-rotate-90">
                 <circle cx="50" cy="50" r="40" fill="none" stroke="var(--border)" strokeWidth="10" />
                 <circle cx="50" cy="50" r="40" fill="none" stroke="var(--accent-violet)" strokeWidth="10" strokeDasharray="251" strokeDashoffset="170" />
-                <text x="50" y="55" fill="white" fontSize="16" fontWeight="bold" textAnchor="middle">32%</text>
+                <text x="50" y="55" fill="white" fontSize="16" fontWeight="bold" textAnchor="middle" transform="rotate(90 50 50)">32%</text>
               </svg>
               <span>CPU</span>
             </div>
-            <div className="gauge">
-              <svg viewBox="0 0 100 100">
+            <div className="w-[30%] flex flex-col items-center gap-2 text-xs text-text-secondary">
+              <svg viewBox="0 0 100 100" className="-rotate-90">
                 <circle cx="50" cy="50" r="40" fill="none" stroke="var(--border)" strokeWidth="10" />
                 <circle cx="50" cy="50" r="40" fill="none" stroke="var(--accent-cyan)" strokeWidth="10" strokeDasharray="251" strokeDashoffset="105" />
-                <text x="50" y="55" fill="white" fontSize="16" fontWeight="bold" textAnchor="middle">58%</text>
+                <text x="50" y="55" fill="white" fontSize="16" fontWeight="bold" textAnchor="middle" transform="rotate(90 50 50)">58%</text>
               </svg>
               <span>Memory</span>
             </div>
-            <div className="gauge">
-              <svg viewBox="0 0 100 100">
+            <div className="w-[30%] flex flex-col items-center gap-2 text-xs text-text-secondary">
+              <svg viewBox="0 0 100 100" className="-rotate-90">
                 <circle cx="50" cy="50" r="40" fill="none" stroke="var(--border)" strokeWidth="10" />
                 <circle cx="50" cy="50" r="40" fill="none" stroke="var(--accent-amber)" strokeWidth="10" strokeDasharray="251" strokeDashoffset="148" />
-                <text x="50" y="55" fill="white" fontSize="16" fontWeight="bold" textAnchor="middle">41%</text>
+                <text x="50" y="55" fill="white" fontSize="16" fontWeight="bold" textAnchor="middle" transform="rotate(90 50 50)">41%</text>
               </svg>
               <span>Disk</span>
             </div>
@@ -175,117 +174,117 @@ export default function SystemStatusPage() {
         </div>
       </div>
 
-      <div className="glass-card storage-card full-width mt-4">
-        <h3>Storage Overview</h3>
-        <div className="storage-bar">
-          <div className="segment bg-violet" style={{width: '20%'}}>Embeddings 18.7MB</div>
-          <div className="segment bg-cyan" style={{width: '60%'}}>Images 3.48GB</div>
-          <div className="segment bg-blue" style={{width: '10%'}}>Logs 12MB</div>
-          <div className="segment bg-gray" style={{width: '10%'}}>Other 50MB</div>
+      <div className="glass-card w-full mt-4">
+        <h3 className="text-base text-white mb-4">Storage Overview</h3>
+        <div className="flex h-6 rounded-full overflow-hidden mt-4">
+          <div className="flex items-center justify-center text-[0.65rem] text-white font-semibold whitespace-nowrap overflow-hidden bg-accent-violet" style={{width: '20%'}}>Embeddings 18.7MB</div>
+          <div className="flex items-center justify-center text-[0.65rem] text-white font-semibold whitespace-nowrap overflow-hidden bg-accent-cyan" style={{width: '60%'}}>Images 3.48GB</div>
+          <div className="flex items-center justify-center text-[0.65rem] text-white font-semibold whitespace-nowrap overflow-hidden bg-accent-blue" style={{width: '10%'}}>Logs 12MB</div>
+          <div className="flex items-center justify-center text-[0.65rem] text-white font-semibold whitespace-nowrap overflow-hidden bg-text-muted" style={{width: '10%'}}>Other 50MB</div>
         </div>
       </div>
 
-      <div className="bottom-row">
-        <div className="glass-card logs-card">
-          <h3>System Logs</h3>
-          <table className="data-table">
+      <div className="flex gap-6">
+        <div className="glass-card flex-1">
+          <h3 className="text-base text-white mb-4">System Logs</h3>
+          <table className="data-table w-full text-left">
             <thead>
               <tr>
-                <th>Time</th>
-                <th>Level</th>
-                <th>Service</th>
-                <th>Message</th>
+                <th className="py-2 px-3">Time</th>
+                <th className="py-2 px-3">Level</th>
+                <th className="py-2 px-3">Service</th>
+                <th className="py-2 px-3">Message</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>10:45:02 AM</td>
-                <td><span className="badge badge-online">INFO</span></td>
-                <td>API Gateway</td>
-                <td>Incoming cross-modal search query received</td>
+                <td className="py-2 px-3">10:45:02 AM</td>
+                <td className="py-2 px-3"><span className="badge badge-online">INFO</span></td>
+                <td className="py-2 px-3">API Gateway</td>
+                <td className="py-2 px-3">Incoming cross-modal search query received</td>
               </tr>
               <tr>
-                <td>10:45:02 AM</td>
-                <td><span className="badge badge-online">INFO</span></td>
-                <td>Retriever</td>
-                <td>FAISS search completed in 0.023ms</td>
+                <td className="py-2 px-3">10:45:02 AM</td>
+                <td className="py-2 px-3"><span className="badge badge-online">INFO</span></td>
+                <td className="py-2 px-3">Retriever</td>
+                <td className="py-2 px-3">FAISS search completed in 0.023ms</td>
               </tr>
               <tr>
-                <td>10:12:14 AM</td>
-                <td><span className="badge badge-error">WARN</span></td>
-                <td>Memory Monitor</td>
-                <td>Memory usage peaked at 85% during index load</td>
+                <td className="py-2 px-3">10:12:14 AM</td>
+                <td className="py-2 px-3"><span className="badge badge-error">WARN</span></td>
+                <td className="py-2 px-3">Memory Monitor</td>
+                <td className="py-2 px-3">Memory usage peaked at 85% during index load</td>
               </tr>
               <tr>
-                <td>09:00:00 AM</td>
-                <td><span className="badge badge-online">INFO</span></td>
-                <td>System</td>
-                <td>Daily backup completed successfully</td>
+                <td className="py-2 px-3">09:00:00 AM</td>
+                <td className="py-2 px-3"><span className="badge badge-online">INFO</span></td>
+                <td className="py-2 px-3">System</td>
+                <td className="py-2 px-3">Daily backup completed successfully</td>
               </tr>
               <tr>
-                <td>08:30:15 AM</td>
-                <td><span className="badge badge-online">INFO</span></td>
-                <td>Startup</td>
-                <td>All services initialized and ready</td>
+                <td className="py-2 px-3">08:30:15 AM</td>
+                <td className="py-2 px-3"><span className="badge badge-online">INFO</span></td>
+                <td className="py-2 px-3">Startup</td>
+                <td className="py-2 px-3">All services initialized and ready</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <div className="glass-card infra-card">
-          <h3>Infrastructure Overview</h3>
-          <div className="infra-grid">
-            <div className="infra-item">
-              <span className="infra-icon">🖥️</span>
-              <div className="infra-details">
-                <strong>Cluster Status</strong>
-                <span className="text-green">Healthy</span>
+        <div className="glass-card flex-1">
+          <h3 className="text-base text-white mb-4">Infrastructure Overview</h3>
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="flex items-center gap-3 bg-bg-surface-2 p-3 rounded-sm border border-border">
+              <span className="text-2xl">🖥️</span>
+              <div className="flex flex-col">
+                <strong className="text-sm text-white">Cluster Status</strong>
+                <span className="text-xs text-accent-green">Healthy</span>
               </div>
             </div>
-            <div className="infra-item">
-              <span className="infra-icon">💾</span>
-              <div className="infra-details">
-                <strong>FAISS Index</strong>
-                <span className="text-green">In Memory (Active)</span>
+            <div className="flex items-center gap-3 bg-bg-surface-2 p-3 rounded-sm border border-border">
+              <span className="text-2xl">💾</span>
+              <div className="flex flex-col">
+                <strong className="text-sm text-white">FAISS Index</strong>
+                <span className="text-xs text-accent-green">In Memory (Active)</span>
               </div>
             </div>
-            <div className="infra-item">
-              <span className="infra-icon">🌐</span>
-              <div className="infra-details">
-                <strong>Network</strong>
-                <span className="text-green">Stable (0% loss)</span>
+            <div className="flex items-center gap-3 bg-bg-surface-2 p-3 rounded-sm border border-border">
+              <span className="text-2xl">🌐</span>
+              <div className="flex flex-col">
+                <strong className="text-sm text-white">Network</strong>
+                <span className="text-xs text-accent-green">Stable (0% loss)</span>
               </div>
             </div>
           </div>
           
-          <h4 className="mt-4">Node Status</h4>
-          <table className="data-table">
+          <h4 className="text-sm text-white mt-4 mb-3">Node Status</h4>
+          <table className="data-table w-full text-left">
             <thead>
               <tr>
-                <th>Node</th>
-                <th>CPU</th>
-                <th>Mem</th>
-                <th>Status</th>
+                <th className="py-2 px-3">Node</th>
+                <th className="py-2 px-3">CPU</th>
+                <th className="py-2 px-3">Mem</th>
+                <th className="py-2 px-3">Status</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>worker-01</td>
-                <td>32%</td>
-                <td>58%</td>
-                <td><span className="text-green">Online</span></td>
+                <td className="py-2 px-3">worker-01</td>
+                <td className="py-2 px-3">32%</td>
+                <td className="py-2 px-3">58%</td>
+                <td className="py-2 px-3"><span className="text-accent-green">Online</span></td>
               </tr>
               <tr>
-                <td>worker-02</td>
-                <td>12%</td>
-                <td>45%</td>
-                <td><span className="text-green">Online</span></td>
+                <td className="py-2 px-3">worker-02</td>
+                <td className="py-2 px-3">12%</td>
+                <td className="py-2 px-3">45%</td>
+                <td className="py-2 px-3"><span className="text-accent-green">Online</span></td>
               </tr>
               <tr>
-                <td>gpu-node-01</td>
-                <td>65%</td>
-                <td>82%</td>
-                <td><span className="text-green">Online</span></td>
+                <td className="py-2 px-3">gpu-node-01</td>
+                <td className="py-2 px-3">65%</td>
+                <td className="py-2 px-3">82%</td>
+                <td className="py-2 px-3"><span className="text-accent-green">Online</span></td>
               </tr>
             </tbody>
           </table>

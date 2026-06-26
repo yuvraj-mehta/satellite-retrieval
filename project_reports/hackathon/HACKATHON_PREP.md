@@ -1,5 +1,5 @@
 # 🛰️ Hackathon Preparation Guide
-## Cross-Modal Satellite Image Retrieval — Team Cheat Sheet
+## SpectraMatch — Cross-Modal Satellite Image Retrieval (Team Cheat Sheet)
 
 > **Purpose**: Everything your team needs to know *on the day of the hackathon*. For deep technical dives into how the system works, see `PROJECT_UNDERSTANDING.md`.
 
@@ -7,7 +7,7 @@
 
 ## 📌 What Are We Building?
 
-A system that can take a **SAR (radar) satellite image** as a query and find the **matching optical (camera) image** of the same geographic location from a large archive — and vice versa.
+**SpectraMatch** is a system that takes a **SAR (radar) satellite image** as a query and finds the **matching optical (camera) image** of the same geographic location from a large archive — and vice versa.
 
 **Why it's hard**: A SAR image and an optical image of the *same place* look completely different. Our trained model learns that they are semantically equivalent.
 
@@ -40,8 +40,14 @@ cd /Users/yuvrajmehta/Developer/satellite-retrieval
 source venv/bin/activate
 export KMP_DUPLICATE_LIB_OK=TRUE
 
+# Start the backend API (port 8000)
+cd backend && bash start.sh
+
+# Start the frontend dev server (port 5173)
+cd ui && npm run dev
+
 # Run full evaluation (the main result)
-python evaluation/evaluate.py --index-dir outputs/index_trained --k 5 10
+cd backend && python evaluation/evaluate.py --index-dir outputs/index_trained --k 5 10
 
 # Compare trained vs baseline
 python scripts/compare_results.py
@@ -67,6 +73,31 @@ print('Model loaded OK')
 
 ---
 
+## 🖥️ The SpectraMatch Web Application
+
+The full-stack application has 7 pages, all accessible from the top navigation bar:
+
+| Page | What to Show Judges |
+|---|---|
+| **Dashboard** | System overview, model stats, quick links |
+| **Search / Query** | Live demo — upload a `.tif`, watch retrieval happen in ~200ms |
+| **Analytics** | F1/Recall/MRR charts across all 4 retrieval modes |
+| **Dataset** | SEN12MS dataset explorer and patch metadata |
+| **Model Architecture** | Visual explanation of the dual-encoder pipeline |
+| **System Status** | Live backend health, GPU/CPU/RAM info |
+| **About** | Project background, team, hackathon context |
+
+### Demonstrating the Search Page (Key Talking Points)
+1. **Drag-and-drop** a `.tif` SAR file or click Browse — preview appears instantly
+2. The query image preview is shown in the left panel; **hover over it** to see the change-image interaction
+3. Hit the search button — results appear in ~200ms
+4. **Similarity scores** are shown on each card; the **sparkline chart** below shows the score drop-off curve
+5. **Click any result card** to open the **side-by-side comparison modal** with a drag-to-swipe slider
+6. **Analysis Insights** panel on the right shows confidence %, score spread, retrieval mode, embedding vs FAISS latency breakdown, and ground truth match rank
+7. Use **Search Parameters** (collapsible below the button) to change modality or Top-K (5, 10, or 15) and search again without leaving the page
+
+---
+
 ## 🎤 Expected Judge Questions & Model Answers
 
 ### Q: "Why a Dual-Encoder instead of a single encoder?"
@@ -85,16 +116,19 @@ print('Model loaded OK')
 **A**: ImageNet is trained on photos of everyday objects. SAR images show radar backscatter — a completely different physical phenomenon. TorchGeo provides ResNet50 weights pretrained on millions of actual Sentinel-1 and Sentinel-2 satellite images using self-supervised learning (MoCo). Starting from satellite-specific weights means our model already "understands" satellite imagery. Fine-tuning then only needs to align the two modalities.
 
 ### Q: "How fast is retrieval?"
-**A**: **0.02ms per query** — pure FAISS similarity search on CPU. The ~900ms demo time includes model loading and GPU initialisation (one-time startup costs). In any real deployment, the model loads once and stays in memory, making every subsequent query 0.02ms.
+**A**: The FAISS search itself takes **~0.02–0.07ms**. The full end-to-end API response (including embedding generation on MPS) is **150–200ms**. The UI shows a real-time breakdown of embedding time vs. FAISS search time in the Analysis Insights panel. In production deployment with a GPU, embedding would drop to ~10ms.
 
 ### Q: "What would you do to improve this?"
-**A**: Three things: **(1)** Train on the full SEN12MS dataset (180,000 pairs) instead of our 1,167-pair subset — we expect F1@5 to approach the 0.333 ceiling. **(2)** Scale to a Vision Transformer or satellite foundation model (Prithvi, CROMA). **(3)** Add hard negative mining during training to force the model to learn finer geographic distinctions.
+**A**: Three things: **(1)** Train on the full SEN12MS dataset (180,000 pairs) instead of our 1,167-pair subset — we expect F1@5 to approach the 0.333 ceiling. **(2)** Scale to a Vision Transformer or satellite foundation model (Prithvi, CROMA). **(3)** Add supervised label loss using SEN12MS's 17 IGBP land-cover class labels to force geographic semantic clustering alongside contrastive alignment.
 
 ### Q: "Why did you choose these 4 optical bands (B4, B8, B11, B12)?"
 **A**: SAR is sensitive to surface roughness, vegetation density, and soil moisture. NIR (B8) captures vegetation health, and SWIR (B11, B12) captures soil moisture and vegetation water content — the same physical properties SAR "sees." Using RGB-only (B4, B3, B2) would discard the optical bands most complementary to SAR.
 
 ### Q: "How does FAISS work here?"
 **A**: During offline index building, we run every image through the encoder and store the resulting 512-dimensional vector. At query time, FAISS performs a brute-force dot product between the query vector and all stored vectors, returning the top-K highest scores. Because all vectors are L2-normalised, dot product = cosine similarity. With only 2,334 stored vectors, this is instantaneous — no approximation needed.
+
+### Q: "Tell me about the web application."
+**A**: SpectraMatch is a 7-page React/Vite dashboard backed by a FastAPI server. Every page is production-quality — from the System Status page that shows live hardware info to the Analytics page with performance charts. The Search page shows the full retrieval pipeline in real-time: upload → preview → search → ranked results with comparison modal. The Analysis Insights panel surfaces the latency breakdown (embedding time vs. FAISS time) so judges can see exactly where time is spent.
 
 ---
 
@@ -121,6 +155,7 @@ print('Model loaded OK')
 | **VV / VH** | SAR polarisation channels. VV = vertical-vertical, VH = vertical-horizontal. |
 | **NIR** | Near-Infrared (842nm). Captures vegetation. |
 | **SWIR** | Short-Wave Infrared (~1600-2200nm). Captures moisture and water content. |
+| **SpectraMatch** | The name of this project's full-stack application. |
 
 ---
 
@@ -132,6 +167,7 @@ print('Model loaded OK')
 | Only 2 geographic scenes (winter 2017) | "The architecture scales to all seasons and regions. This subset validates the pipeline." |
 | Some overfitting (val loss 0.1224, train loss 0.0144) | "Expected with limited data. More data closes this gap." |
 | ResNet50 discards spatial layout | "Upgrade path: Vision Transformer or foundation model (Prithvi/CROMA) for spatial awareness." |
+| Embedding generation on CPU/MPS is ~140ms | "On a CUDA GPU, this drops to <10ms. The FAISS search itself is already sub-millisecond." |
 
 ---
 
@@ -139,11 +175,16 @@ print('Model loaded OK')
 
 | File | What It Does |
 |---|---|
-| `datasets/sen12ms_dataset.py` | Loads and pairs SAR/optical images by (scene_id, patch_id) |
-| `models/dual_encoder.py` | The trained model: two ResNet50s + InfoNCE loss |
-| `retrieval/faiss_utils.py` | FAISS index wrapper |
-| `evaluation/evaluate.py` | Runs all 4 retrieval modes, prints the report |
-| `train.py` | Training loop with InfoNCE + gradient accumulation |
-| `scripts/demo.py` | Live demo: query → top-5 results |
-| `outputs/checkpoints/best_model.pt` | **THE trained model weights (epoch 19, val_loss=0.1224)** |
-| `outputs/index_trained/` | Pre-built FAISS index from trained model |
+| `backend/datasets/sen12ms_dataset.py` | Loads and pairs SAR/optical images by (scene_id, patch_id) |
+| `backend/models/dual_encoder.py` | The trained model: two ResNet50s + InfoNCE loss |
+| `backend/retrieval/faiss_utils.py` | FAISS index wrapper |
+| `backend/evaluation/evaluate.py` | Runs all 4 retrieval modes, prints the report |
+| `backend/train.py` | Training loop with InfoNCE + gradient accumulation |
+| `backend/api/main.py` | FastAPI server: /health, /preview, /query, /image endpoints |
+| `backend/api/retriever.py` | Singleton retriever service (loads model + FAISS once) |
+| `backend/scripts/demo.py` | Live demo: query → top-5 results |
+| `backend/outputs/checkpoints/best_model.pt` | **THE trained model weights (epoch 19, val_loss=0.1224)** |
+| `backend/outputs/index_trained/` | Pre-built FAISS index from trained model |
+| `ui/src/pages/SearchPage.jsx` | Main search UI — 3-column layout with comparison modal |
+| `ui/src/hooks/useRetrieval.js` | React hook wrapping the /query API call |
+| `ui/src/App.jsx` | Root app with 7 route definitions |
