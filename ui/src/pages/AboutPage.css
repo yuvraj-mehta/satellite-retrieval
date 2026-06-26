@@ -1,0 +1,225 @@
+.about-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.about-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 40px;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(17, 24, 39, 0) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-content {
+  z-index: 2;
+}
+.hero-content h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, #FFFFFF 0%, #A855F7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-content .subtitle {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  max-width: 500px;
+}
+
+.globe-container {
+  width: 200px;
+  height: 200px;
+  position: relative;
+  z-index: 1;
+}
+.globe-glow {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.4) 0%, rgba(0, 212, 170, 0.1) 60%, transparent 100%);
+  box-shadow: 0 0 50px rgba(124, 58, 237, 0.2);
+}
+
+.about-intro {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  max-width: 800px;
+}
+
+.about-columns {
+  display: flex;
+  gap: 24px;
+}
+.left-col { flex: 6; }
+.right-col { flex: 4; }
+
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.feature-card {
+  padding: 24px;
+}
+.feature-card .icon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+.feature-card h3 {
+  font-size: 1rem;
+  color: white;
+  margin-bottom: 8px;
+}
+.feature-card p {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.workflow-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-surface-2);
+  padding: 20px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.flow-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.flow-step strong {
+  font-size: 0.875rem;
+  color: white;
+  margin-bottom: 4px;
+}
+.flow-step span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.flow-arrow {
+  color: var(--accent-violet);
+  font-size: 1.25rem;
+}
+
+.overview-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.875rem;
+}
+.overview-table td:first-child {
+  color: var(--text-secondary);
+}
+.overview-table td:last-child {
+  text-align: right;
+  color: white;
+}
+
+.check-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.check-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+.check-list .check {
+  color: var(--accent-green);
+}
+
+.stack-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+.stack-col h4 {
+  font-size: 0.875rem;
+  color: white;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+.stack-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.stack-col li {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.team-member {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-surface-2);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.team-member .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: white;
+  font-size: 0.875rem;
+}
+.team-member .info {
+  display: flex;
+  flex-direction: column;
+}
+.team-member .info strong {
+  font-size: 0.875rem;
+  color: white;
+}
+.team-member .info span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.bg-amber { background: var(--accent-amber); }
+
+.about-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px;
+  border-top: 1px solid var(--border);
+}
+.ack-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+.text-white { color: white; }
+.copyright {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}

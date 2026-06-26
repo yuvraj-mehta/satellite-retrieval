@@ -207,3 +207,8 @@
 **Plans**: `12/1-PLAN.md` (dataset + loss) → `12/2-PLAN.md` (training loop)
 
 **Requirements**: SPEC Goals 3, 4
+
+### Phase 13: SpectraMatch UI Rebuild
+**Status**: ✅ Complete
+**Objective**: Full redesign of the React frontend to match the SpectraMatch reference design (9 pages). Replaces tab-based layout with sidebar navigation. New pages: Dashboard, Search/Query, Results, Analytics, Dataset, Model Architecture, System Status, About. New backend endpoints: GET /dataset/info, GET /system/status. Extended GET /benchmarks with latency_breakdown. Extended POST /query response with per-stage latency timing.
+

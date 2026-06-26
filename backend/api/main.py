@@ -19,10 +19,11 @@ if str(backend_dir) not in sys.path:
 from api.retriever import RetrieverService, load_tif
 from datasets.sen12ms_dataset import OPT_RGB_BANDS
 from api.benchmark import router as benchmark_router
-
+from api.system_info import router as system_info_router
 
 app = FastAPI(title="Satellite Image Retrieval API")
 app.include_router(benchmark_router)
+app.include_router(system_info_router)
 
 # Configure CORS
 app.add_middleware(
@@ -152,10 +153,16 @@ async def query(
 
         # Process and search
         t0 = time.time()
+        
+        t_encode_start = time.time()
         query_emb = service.encode(query_arr, query_modality)
-        results = service.search(query_emb, target_modality, k=k)
-        retrieval_ms = (time.time() - t0) * 1000
+        encode_ms = (time.time() - t_encode_start) * 1000
 
+        t_search_start = time.time()
+        results = service.search(query_emb, target_modality, k=k)
+        faiss_ms = (time.time() - t_search_start) * 1000
+
+        t_render_start = time.time()
         # Render query image
         query_b64 = render_to_base64(query_arr, query_modality)
 
@@ -193,10 +200,18 @@ async def query(
                 "is_match": is_match
             })
 
+        render_ms = (time.time() - t_render_start) * 1000
+        retrieval_ms = (time.time() - t0) * 1000
+
         return {
             "query_image": query_b64,
             "results": response_results,
-            "retrieval_ms": retrieval_ms
+            "retrieval_ms": retrieval_ms,
+            "latency_breakdown": {
+                "embedding_ms": encode_ms,
+                "faiss_ms": faiss_ms,
+                "postprocess_ms": render_ms
+            }
         }
 
     except HTTPException as he:
