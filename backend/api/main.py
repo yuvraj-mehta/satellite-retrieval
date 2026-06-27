@@ -57,30 +57,34 @@ def get_service():
 
 
 def render_image(img_arr: np.ndarray, modality: str) -> Image.Image:
-    """Render a Sentinel-1/2 patch as a high-contrast PIL Image."""
+    """Render a Sentinel-1/2 patch as a high-contrast PIL Image.
+    Expects raw unnormalized data for optical (3 bands: RGB)."""
     if modality == "sar":
         # SAR is (2, H, W). Take VV channel (index 0).
         band = img_arr[0].copy()
-        # Robust min-max stretch
-        b_min, b_max = band.min(), band.max()
-        if b_max > b_min:
-            band = (band - b_min) / (b_max - b_min)
+        # Robust 2% percentile clip to suppress outliers
+        p_low, p_high = np.percentile(band, 2), np.percentile(band, 98)
+        if p_high > p_low:
+            band = np.clip((band - p_low) / (p_high - p_low), 0, 1)
         else:
             band = np.zeros_like(band)
-        
         gray_img = (band * 255.0).astype(np.uint8)
         return Image.fromarray(gray_img, mode="L")
     else:
-        # Optical is (4, H, W). Take first 3 bands (B4, B8, B11) for beautiful RGB Composite.
-        rgb_bands = img_arr[[0, 1, 2], :, :].copy()
-        # Min-max scale each band individually for rich color contrast
+        # Optical receives raw (3, H, W) corresponding exactly to Red, Green, Blue
+        rgb_bands = img_arr.copy()
+
+        # Per-band 1–99 percentile clip + gamma=0.8 to lift midtones
         for i in range(3):
-            b_min, b_max = rgb_bands[i].min(), rgb_bands[i].max()
-            if b_max > b_min:
-                rgb_bands[i] = (rgb_bands[i] - b_min) / (b_max - b_min)
+            p_low = np.percentile(rgb_bands[i], 1)
+            p_high = np.percentile(rgb_bands[i], 99)
+            if p_high > p_low:
+                rgb_bands[i] = np.clip((rgb_bands[i] - p_low) / (p_high - p_low), 0, 1)
             else:
                 rgb_bands[i] = np.zeros_like(rgb_bands[i])
-        
+            # Gamma correction (standard photographic trick for satellite imagery)
+            rgb_bands[i] = np.power(rgb_bands[i], 0.8)
+
         rgb_img = np.transpose(rgb_bands, (1, 2, 0))
         rgb_img = (rgb_img * 255.0).astype(np.uint8)
         return Image.fromarray(rgb_img, mode="RGB")
@@ -104,8 +108,10 @@ def get_image(path: str, modality: str):
             if not p.exists():
                 raise HTTPException(status_code=404, detail="Image not found")
         
-        bands = None if modality == "sar" else [3, 7, 10, 11]
-        arr = load_tif(p, bands=bands, modality=modality)
+        if modality in ["optical", "optical_rgb"]:
+            arr = load_tif(p, bands=OPT_RGB_BANDS, modality="optical_rgb", normalize=False)
+        else:
+            arr = load_tif(p, bands=None, modality="sar", normalize=False)
         
         pil_img = render_image(arr, modality)
         
@@ -129,15 +135,12 @@ async def preview(file: UploadFile = File(...), modality: str = Form(...)):
             raise HTTPException(status_code=500, detail=f"Failed to save uploaded file: {e}")
 
     try:
-        if modality == "sar":
-            bands = None
-        elif modality == "optical_rgb":
-            bands = OPT_RGB_BANDS
+        if modality in ["optical", "optical_rgb"]:
+            render_arr = load_tif(tmp_path, bands=OPT_RGB_BANDS, modality="optical_rgb", normalize=False)
         else:
-            bands = [3, 7, 10, 11]
+            render_arr = load_tif(tmp_path, bands=None, modality="sar", normalize=False)
             
-        arr = load_tif(tmp_path, bands=bands, modality=modality)
-        pil_img = render_image(arr, modality)
+        pil_img = render_image(render_arr, modality)
         buf = io.BytesIO()
         pil_img.save(buf, format="PNG")
         b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
@@ -187,6 +190,7 @@ async def query(
             raise HTTPException(status_code=400, detail=f"Modality mismatch: You selected SAR (Sentinel-1) which expects 2 bands, but the uploaded image has {num_bands} bands. If you uploaded an Optical image, please change the Query Modality.")
 
         # Load and normalize query image
+        t_preprocess_start = time.perf_counter()
         if query_modality == "sar":
             bands = None
         elif query_modality == "optical_rgb":
@@ -194,6 +198,7 @@ async def query(
         else:
             bands = [3, 7, 10, 11]
         query_arr = load_tif(tmp_path, bands=bands, modality=query_modality)
+        preprocess_ms = (time.perf_counter() - t_preprocess_start) * 1000
         
         # Track query scene_id and patch_id
         match_s = re.search(r"_s\d*_?(\d+)_p(\d+)\.tif$", file.filename)
@@ -209,21 +214,27 @@ async def query(
                 query_patch_id = match_strict.group(1) if match_strict else None
 
         # Process and search
-        t0 = time.time()
-        
-        t_encode_start = time.time()
+        t_encode_start = time.perf_counter()
         query_emb = service.encode(query_arr, query_modality)
-        encode_ms = (time.time() - t_encode_start) * 1000
+        encode_ms = (time.perf_counter() - t_encode_start) * 1000
 
-        t_search_start = time.time()
+        t_search_start = time.perf_counter()
         # Force memory contiguity so FAISS doesn't have to copy the array under the hood
         query_emb_contiguous = np.ascontiguousarray(query_emb, dtype=np.float32)
         results = service.search(query_emb_contiguous, target_modality, k=k)
-        faiss_ms = (time.time() - t_search_start) * 1000
+        faiss_ms = (time.perf_counter() - t_search_start) * 1000
+        
+        # Calculate total retrieval latency (excluding UI rendering overhead below)
+        retrieval_ms = preprocess_ms + encode_ms + faiss_ms
 
         # We no longer render base64 in Python for the results to save 300ms!
         # Render ONLY the query image for the preview.
-        pil_img = render_image(query_arr, query_modality)
+        if query_modality in ["optical", "optical_rgb"]:
+            render_arr = load_tif(tmp_path, bands=OPT_RGB_BANDS, modality="optical_rgb", normalize=False)
+        else:
+            render_arr = load_tif(tmp_path, bands=None, modality="sar", normalize=False)
+            
+        pil_img = render_image(render_arr, query_modality)
         buf = io.BytesIO()
         pil_img.save(buf, format="PNG")
         query_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
@@ -256,16 +267,14 @@ async def query(
                 "is_match": is_match
             })
 
-        retrieval_ms = (time.time() - t0) * 1000
-
         return {
             "query_image": query_b64,
             "results": response_results,
             "retrieval_ms": retrieval_ms,
             "latency_breakdown": {
+                "preprocess_ms": preprocess_ms,
                 "embedding_ms": encode_ms,
-                "faiss_ms": faiss_ms,
-                "postprocess_ms": 0.0 # Deprecated
+                "faiss_ms": faiss_ms
             }
         }
 
@@ -280,4 +289,3 @@ async def query(
         # Cleanup temp file
         if tmp_path.exists():
             tmp_path.unlink()
-

@@ -1,224 +1,280 @@
 import React from 'react';
+import { 
+  Calendar, Target, Rocket, Users, Globe, Zap, Code, 
+  CircleDot, User, Mail, Search, LineChart,
+  Eye, Leaf, Map, Cpu, Box
+} from 'lucide-react';
 
 export default function AboutPage() {
+
+  const Card = ({ children, className = "" }) => (
+    <div className={`bg-[#121626]/80 border border-[#232B42] rounded-xl p-5 flex flex-col relative ${className}`}>
+      {children}
+    </div>
+  );
+
+  const Title = ({ children, className = "" }) => (
+    <h3 className={`text-[13px] font-bold text-white mb-4 ${className}`}>
+      {children}
+    </h3>
+  );
+
   return (
-    <div className="flex flex-col gap-6">
-      <div className="glass-card flex justify-between items-center p-10 relative overflow-hidden bg-gradient-to-br from-accent-violet/10 to-transparent">
-        <div className="z-10">
-          <h1 className="text-[2.5rem] font-extrabold mb-2 bg-gradient-to-r from-white to-[#A855F7] bg-clip-text text-transparent">About SpectraMatch</h1>
-          <p className="text-xl text-text-secondary max-w-[500px]">Bridging SAR and Optical Imagery with AI</p>
-          <button className="btn-ghost mt-4">Download Brochure</button>
-        </div>
-        <div className="w-[200px] h-[200px] relative z-0">
-          <div className="w-full h-full rounded-full shadow-[0_0_50px_rgba(124,58,237,0.2)]" style={{ background: 'radial-gradient(circle, rgba(124, 58, 237, 0.4) 0%, rgba(0, 212, 170, 0.1) 60%, transparent 100%)' }}></div>
-        </div>
-      </div>
-
-      <div className="text-base leading-[1.6] text-text-primary max-w-[800px]">
-        <p>
-          SpectraMatch is a cross-modal satellite image retrieval system built to break down the barriers between different Earth observation sensors. By leveraging advanced contrastive learning techniques, the system maps both active radar (SAR) and passive optical imagery into a shared embedding space, allowing seamless search across modalities regardless of cloud cover, time of day, or sensor type.
-        </p>
-      </div>
-
-      <div className="flex gap-6">
-        <div className="flex-[6]">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="glass-card p-6">
-              <div className="text-2xl mb-3">🔍</div>
-              <h3 className="text-base text-white mb-2">Cross-Modal Retrieval</h3>
-              <p className="text-sm text-text-secondary leading-[1.5]">Search optical archives using SAR queries, and vice-versa. Eliminates the need for perfectly paired data during operation.</p>
-            </div>
-            <div className="glass-card p-6">
-              <div className="text-2xl mb-3">🧠</div>
-              <h3 className="text-base text-white mb-2">AI-Powered Matching</h3>
-              <p className="text-sm text-text-secondary leading-[1.5]">Dual ResNet50 encoders trained via InfoNCE contrastive loss learn deep semantic relationships between sensors.</p>
-            </div>
-            <div className="glass-card p-6">
-              <div className="text-2xl mb-3">⚡</div>
-              <h3 className="text-base text-white mb-2">High Performance</h3>
-              <p className="text-sm text-text-secondary leading-[1.5]">Sub-millisecond retrieval times using FAISS IndexFlatIP on L2-normalized 512-dimensional embedding vectors.</p>
-            </div>
-            <div className="glass-card p-6">
-              <div className="text-2xl mb-3">🛡️</div>
-              <h3 className="text-base text-white mb-2">Robust & Scalable</h3>
-              <p className="text-sm text-text-secondary leading-[1.5]">Built for production with FastAPI, React, and PyTorch. Easily scales to millions of satellite image patches.</p>
-            </div>
-          </div>
-
-          <div className="glass-card w-full mt-4">
-            <h3 className="text-base text-white mb-4">System Workflow</h3>
-            <div className="flex items-center justify-between bg-bg-surface-2 p-5 rounded-sm border border-border">
-              <div className="flex flex-col items-center text-center">
-                <strong className="text-sm text-white mb-1">Input Query</strong>
-                <span className="text-xs text-text-muted">SAR or Optical</span>
+    <div className="flex flex-col gap-5 text-gray-100 h-full overflow-y-auto pr-2 pb-6 custom-scrollbar font-sans">
+      
+      {/* Top Row: Hero & At a Glance */}
+      <div className="grid grid-cols-12 gap-5 shrink-0">
+        
+        {/* Hero Card */}
+        <div className="col-span-8 bg-[#121626]/80 border border-[#232B42] rounded-xl overflow-hidden relative shadow-lg">
+          {/* Earth Background Image - Using a placeholder space/earth image */}
+          <div className="absolute inset-0 right-0 left-1/3 opacity-40 mix-blend-screen pointer-events-none" 
+               style={{ 
+                 backgroundImage: "url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200&auto=format&fit=crop')", 
+                 backgroundSize: "cover", 
+                 backgroundPosition: "center right",
+                 maskImage: "linear-gradient(to right, transparent, black 40%)"
+               }}
+          ></div>
+          
+          <div className="relative z-10 p-6 flex flex-col h-full justify-between">
+            <div>
+              <div className="text-[#8B5CF6] text-[12px] font-bold tracking-wider mb-3">About</div>
+              <h1 className="text-4xl font-bold text-white mb-3">
+                Project <span className="text-[#8B5CF6]">Vasundhara</span>
+              </h1>
+              <div className="text-[#10B981] text-[14px] font-semibold mb-4">
+                AI for Earth. Insights for Tomorrow.
               </div>
-              <div className="text-accent-violet text-xl">→</div>
-              <div className="flex flex-col items-center text-center">
-                <strong className="text-sm text-white mb-1">Feature Extraction</strong>
-                <span className="text-xs text-text-muted">Dual ResNet50</span>
+              <p className="text-gray-300 text-[13px] leading-relaxed max-w-xl mb-8">
+                We are a team of 4 passionate builders and researchers developing a cross-modal 
+                satellite image retrieval system that can find semantically similar places across 
+                SAR and multispectral imagery. Our goal is to make Earth observation search 
+                faster, smarter, and more accessible.
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-8 text-[12px] pt-4 border-t border-[#232B42]/50 max-w-xl">
+              <div className="flex items-center gap-3">
+                <div className="bg-[#8B5CF6]/10 p-2 rounded-lg border border-[#8B5CF6]/20 text-[#8B5CF6]">
+                  <Calendar size={18} />
+                </div>
+                <div>
+                  <div className="text-gray-400 text-[11px] mb-0.5">Team Founded</div>
+                  <div className="text-white font-medium">May 2025</div>
+                </div>
               </div>
-              <div className="text-accent-violet text-xl">→</div>
-              <div className="flex flex-col items-center text-center">
-                <strong className="text-sm text-white mb-1">Shared Embedding</strong>
-                <span className="text-xs text-text-muted">512-D Space</span>
+              <div className="flex items-center gap-3">
+                <div className="bg-[#10B981]/10 p-2 rounded-lg border border-[#10B981]/20 text-[#10B981]">
+                  <Target size={18} />
+                </div>
+                <div>
+                  <div className="text-gray-400 text-[11px] mb-0.5">Focus Area</div>
+                  <div className="text-white font-medium">Earth Observation AI</div>
+                </div>
               </div>
-              <div className="text-accent-violet text-xl">→</div>
-              <div className="flex flex-col items-center text-center">
-                <strong className="text-sm text-white mb-1">Similarity Search</strong>
-                <span className="text-xs text-text-muted">FAISS Index</span>
-              </div>
-              <div className="text-accent-violet text-xl">→</div>
-              <div className="flex flex-col items-center text-center">
-                <strong className="text-sm text-white mb-1">Top-K Results</strong>
-                <span className="text-xs text-text-muted">Ranked Matches</span>
+              <div className="flex items-center gap-3">
+                <div className="bg-[#3B82F6]/10 p-2 rounded-lg border border-[#3B82F6]/20 text-[#3B82F6]">
+                  <Rocket size={18} />
+                </div>
+                <div>
+                  <div className="text-gray-400 text-[11px] mb-0.5">Hackathon</div>
+                  <div className="text-white font-medium">Bharatiya Antariksh Hackathon</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex-[4]">
-          <div className="glass-card">
-            <h3 className="text-base text-white mb-4">Project Overview</h3>
-            <table className="w-full">
-              <tbody>
-                <tr>
-                  <td className="py-3 border-b border-border text-sm text-text-secondary">Project Name</td>
-                  <td className="py-3 border-b border-border text-sm text-right text-white"><strong>SpectraMatch</strong></td>
-                </tr>
-                <tr>
-                  <td className="py-3 border-b border-border text-sm text-text-secondary">Project Type</td>
-                  <td className="py-3 border-b border-border text-sm text-right text-white"><strong>Cross-Modal AI System</strong></td>
-                </tr>
-                <tr>
-                  <td className="py-3 border-b border-border text-sm text-text-secondary">Primary Dataset</td>
-                  <td className="py-3 border-b border-border text-sm text-right text-white"><strong>SEN12MS (Subset)</strong></td>
-                </tr>
-                <tr>
-                  <td className="py-3 border-b border-border text-sm text-text-secondary">Modalities</td>
-                  <td className="py-3 border-b border-border text-sm text-right text-white"><strong>Sentinel-1, Sentinel-2</strong></td>
-                </tr>
-                <tr>
-                  <td className="py-3 border-b border-border text-sm text-text-secondary">Developed For</td>
-                  <td className="py-3 border-b border-border text-sm text-right text-white"><strong>Bharatiya Antariksh Hackathon 2024</strong></td>
-                </tr>
-                <tr>
-                  <td className="py-3 border-b border-border text-sm text-text-secondary">Duration</td>
-                  <td className="py-3 border-b border-border text-sm text-right text-white"><strong>3 Months</strong></td>
-                </tr>
-                <tr>
-                  <td className="py-3 border-b border-border text-sm text-text-secondary">Version</td>
-                  <td className="py-3 border-b border-border text-sm text-right text-white"><strong>v1.0.0</strong></td>
-                </tr>
-              </tbody>
-            </table>
+        {/* At a Glance */}
+        <Card className="col-span-4">
+          <Title>At a Glance</Title>
+          <div className="flex flex-col gap-4 text-[12px] flex-1 justify-center">
+            <div className="flex justify-between items-center border-b border-[#232B42] pb-3">
+              <div className="flex items-center gap-2 text-gray-400">
+                <Users size={16} className="text-[#8B5CF6]" /> Team Name
+              </div>
+              <div className="text-white font-medium">Project Vasundhara</div>
+            </div>
+            <div className="flex justify-between items-center border-b border-[#232B42] pb-3">
+              <div className="flex items-center gap-2 text-gray-400">
+                <Users size={16} className="text-[#10B981]" /> Team Size
+              </div>
+              <div className="text-white font-medium">4 Members</div>
+            </div>
+            <div className="flex justify-between items-center border-b border-[#232B42] pb-3">
+              <div className="flex items-center gap-2 text-gray-400">
+                <Globe size={16} className="text-[#3B82F6]" /> Project Domain
+              </div>
+              <div className="text-white font-medium">Remote Sensing & AI</div>
+            </div>
+            <div className="flex justify-between items-center border-b border-[#232B42] pb-3">
+              <div className="flex items-center gap-2 text-gray-400">
+                <Zap size={16} className="text-[#F59E0B]" /> Approach
+              </div>
+              <div className="text-white font-medium">Cross-Modal Retrieval</div>
+            </div>
+            <div className="flex justify-between items-center border-b border-[#232B42] pb-3">
+              <div className="flex items-center gap-2 text-gray-400">
+                <Code size={16} className="text-[#10B981]" /> Tech Stack
+              </div>
+              <div className="text-white font-medium">PyTorch, FAISS, FastAPI</div>
+            </div>
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2 text-gray-400">
+                <CircleDot size={16} className="text-[#8B5CF6]" /> Current Phase
+              </div>
+              <div className="text-white font-medium">Prototype Development</div>
+            </div>
           </div>
+        </Card>
 
-          <div className="glass-card mt-4">
-            <h3 className="text-base text-white mb-4">Our Goal</h3>
-            <p className="text-text-muted text-[0.875rem] mb-3">
-              To provide a reliable, fast, and scalable tool for Earth Observation analysts to find relevant imagery across sensor types, improving disaster response, environmental monitoring, and intelligence gathering.
-            </p>
-            <ul className="list-none p-0 m-0">
-              <li className="flex items-center gap-2 mb-2 text-sm text-text-primary"><span className="text-accent-green">✓</span> Overcome cloud cover limitations using SAR</li>
-              <li className="flex items-center gap-2 mb-2 text-sm text-text-primary"><span className="text-accent-green">✓</span> Enable rapid semantic search</li>
-              <li className="flex items-center gap-2 mb-2 text-sm text-text-primary"><span className="text-accent-green">✓</span> Provide intuitive visual interfaces</li>
-              <li className="flex items-center gap-2 mb-2 text-sm text-text-primary"><span className="text-accent-green">✓</span> Ensure enterprise-grade performance</li>
-            </ul>
+      </div>
+
+      {/* Middle Row: Our Team & Key Contributions */}
+      <div className="grid grid-cols-12 gap-5 shrink-0">
+        
+        {/* Our Team */}
+        <div className="col-span-12 flex flex-col">
+          <div className="mb-4">
+            <h3 className="text-[14px] font-bold text-white mb-1">Our Team</h3>
+            <p className="text-gray-400 text-[12px]">A diverse team united by curiosity and purpose.</p>
+          </div>
+          
+          <div className="grid grid-cols-4 gap-4 flex-1">
+            
+            {/* Team Member 1 */}
+            <Card className="p-4 flex flex-col h-full bg-[#121626] border-[#232B42]">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-[#8B5CF6]/10 border border-[#8B5CF6]/30 text-[#8B5CF6] flex items-center justify-center font-bold text-lg shrink-0">
+                  YM
+                </div>
+                <div>
+                  <div className="text-white font-bold text-[13px] mb-0.5">Yuvraj Mehta</div>
+                  <div className="text-[#8B5CF6] text-[10px] leading-tight">Team Lead & ML Engineer<br/>Lead</div>
+                </div>
+              </div>
+              <div className="text-gray-400 text-[11px] leading-relaxed mb-4 flex-1">
+                Leads model development and system architecture. Focused on representation learning and efficient retrieval systems.
+              </div>
+              <div className="flex gap-3 text-gray-400 mt-auto">
+                <div className="bg-[#8B5CF6]/10 p-1.5 rounded text-[#8B5CF6] cursor-pointer hover:bg-[#8B5CF6]/20 transition-colors"><Code size={14} /></div>
+                <div className="bg-[#8B5CF6]/10 p-1.5 rounded text-[#8B5CF6] cursor-pointer hover:bg-[#8B5CF6]/20 transition-colors"><User size={14} /></div>
+                <div className="bg-[#8B5CF6]/10 p-1.5 rounded text-[#8B5CF6] cursor-pointer hover:bg-[#8B5CF6]/20 transition-colors"><Mail size={14} /></div>
+              </div>
+            </Card>
+
+            {/* Team Member 2 */}
+            <Card className="p-4 flex flex-col h-full bg-[#121626] border-[#232B42]">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-[#10B981]/10 border border-[#10B981]/30 text-[#10B981] flex items-center justify-center font-bold text-lg shrink-0">
+                  PK
+                </div>
+                <div>
+                  <div className="text-white font-bold text-[13px] mb-0.5">Priya Kumari</div>
+                  <div className="text-[#10B981] text-[10px] leading-tight">Data Scientist</div>
+                </div>
+              </div>
+              <div className="text-gray-400 text-[11px] leading-relaxed mb-4 flex-1">
+                Handles data pipelines, preprocessing and exploratory analysis to ensure high-quality, aligned satellite pairs.
+              </div>
+              <div className="flex gap-3 text-gray-400 mt-auto">
+                <div className="bg-[#10B981]/10 p-1.5 rounded text-[#10B981] cursor-pointer hover:bg-[#10B981]/20 transition-colors"><Code size={14} /></div>
+                <div className="bg-[#10B981]/10 p-1.5 rounded text-[#10B981] cursor-pointer hover:bg-[#10B981]/20 transition-colors"><User size={14} /></div>
+                <div className="bg-[#10B981]/10 p-1.5 rounded text-[#10B981] cursor-pointer hover:bg-[#10B981]/20 transition-colors"><Mail size={14} /></div>
+              </div>
+            </Card>
+
+            {/* Team Member 3 */}
+            <Card className="p-4 flex flex-col h-full bg-[#121626] border-[#232B42]">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-[#3B82F6]/10 border border-[#3B82F6]/30 text-[#3B82F6] flex items-center justify-center font-bold text-lg shrink-0">
+                  SK
+                </div>
+                <div>
+                  <div className="text-white font-bold text-[13px] mb-0.5">Sumit Kumar</div>
+                  <div className="text-[#3B82F6] text-[10px] leading-tight">Backend Developer</div>
+                </div>
+              </div>
+              <div className="text-gray-400 text-[11px] leading-relaxed mb-4 flex-1">
+                Builds APIs and retrieval services, optimizes FAISS indexing and ensures low-latency performance.
+              </div>
+              <div className="flex gap-3 text-gray-400 mt-auto">
+                <div className="bg-[#3B82F6]/10 p-1.5 rounded text-[#3B82F6] cursor-pointer hover:bg-[#3B82F6]/20 transition-colors"><Code size={14} /></div>
+                <div className="bg-[#3B82F6]/10 p-1.5 rounded text-[#3B82F6] cursor-pointer hover:bg-[#3B82F6]/20 transition-colors"><User size={14} /></div>
+                <div className="bg-[#3B82F6]/10 p-1.5 rounded text-[#3B82F6] cursor-pointer hover:bg-[#3B82F6]/20 transition-colors"><Mail size={14} /></div>
+              </div>
+            </Card>
+
+            {/* Team Member 4 */}
+            <Card className="p-4 flex flex-col h-full bg-[#121626] border-[#232B42]">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-[#F59E0B]/10 border border-[#F59E0B]/30 text-[#F59E0B] flex items-center justify-center font-bold text-lg shrink-0">
+                  AK
+                </div>
+                <div>
+                  <div className="text-white font-bold text-[13px] mb-0.5">Akshat Kumar</div>
+                  <div className="text-[#F59E0B] text-[10px] leading-tight">Frontend Developer</div>
+                </div>
+              </div>
+              <div className="text-gray-400 text-[11px] leading-relaxed mb-4 flex-1">
+                Designs intuitive interfaces and visualizations to make satellite search simple and insightful.
+              </div>
+              <div className="flex gap-3 text-gray-400 mt-auto">
+                <div className="bg-[#F59E0B]/10 p-1.5 rounded text-[#F59E0B] cursor-pointer hover:bg-[#F59E0B]/20 transition-colors"><Code size={14} /></div>
+                <div className="bg-[#F59E0B]/10 p-1.5 rounded text-[#F59E0B] cursor-pointer hover:bg-[#F59E0B]/20 transition-colors"><User size={14} /></div>
+                <div className="bg-[#F59E0B]/10 p-1.5 rounded text-[#F59E0B] cursor-pointer hover:bg-[#F59E0B]/20 transition-colors"><Mail size={14} /></div>
+              </div>
+            </Card>
+
+          </div>
+        </div>
+
+
+      </div>
+
+      {/* Connect With Us */}
+      <div className="flex flex-col md:flex-row items-center justify-between bg-[#121626]/80 border border-[#232B42] rounded-xl p-5 shrink-0 mt-4">
+        <div className="font-bold text-white text-[14px]">Connect With Us</div>
+        <div className="flex flex-wrap gap-8 text-[12px] text-gray-300">
+          <div className="flex items-center gap-3 hover:text-white transition-colors cursor-pointer">
+            <div className="text-gray-400 bg-[#0B0E17] border border-[#232B42] p-1.5 rounded"><Code size={14} /></div>
+            github.com/project-vasundhara
+          </div>
+          <div className="flex items-center gap-3 hover:text-white transition-colors cursor-pointer">
+            <div className="text-gray-400 bg-[#0B0E17] border border-[#232B42] p-1.5 rounded"><User size={14} /></div>
+            linkedin.com/company/project-vasundhara
+          </div>
+          <div className="flex items-center gap-3 hover:text-white transition-colors cursor-pointer">
+            <div className="text-gray-400 bg-[#0B0E17] border border-[#232B42] p-1.5 rounded"><Mail size={14} /></div>
+            projectvasundhara.team@gmail.com
           </div>
         </div>
       </div>
 
-      <div className="glass-card mt-4">
-        <h3 className="text-base text-white mb-5">Technology Stack</h3>
-        <div className="grid grid-cols-5 gap-4">
-          <div>
-            <h4 className="text-sm text-white mb-3 border-b border-border pb-2">Framework</h4>
-            <ul className="list-none p-0 m-0">
-              <li className="text-xs text-text-secondary mb-2">React 18</li>
-              <li className="text-xs text-text-secondary mb-2">FastAPI</li>
-              <li className="text-xs text-text-secondary mb-2">Vite</li>
-            </ul>
+      {/* Footer Banner */}
+      <div className="mt-4 bg-[#0A1A14] border border-[#10B981]/20 rounded-xl p-5 flex items-center gap-4 relative overflow-hidden shrink-0">
+        <div className="absolute right-0 top-0 bottom-0 w-1/3 opacity-30"
+             style={{ 
+               backgroundImage: "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 100%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath d=%22M0,50 Q25,20 50,50 T100,50 T150,50 T200,50%22 fill=%22none%22 stroke=%22%2310B981%22 stroke-width=%222%22/%3E%3Cpath d=%22M0,60 Q25,30 50,60 T100,60 T150,60 T200,60%22 fill=%22none%22 stroke=%22%2310B981%22 stroke-width=%221%22 opacity=%220.5%22/%3E%3Cpath d=%22M0,40 Q25,10 50,40 T100,40 T150,40 T200,40%22 fill=%22none%22 stroke=%22%2310B981%22 stroke-width=%221%22 opacity=%220.3%22/%3E%3C/svg%3E')",
+               backgroundSize: "cover",
+               backgroundRepeat: "no-repeat"
+             }}
+        ></div>
+        
+        <div className="text-[#10B981] p-3 rounded-xl bg-[#10B981]/10 border border-[#10B981]/20 relative z-10">
+          <Leaf size={24} />
+        </div>
+        <div className="relative z-10">
+          <div className="text-[#10B981] font-bold text-[14px] mb-1">
+            Vasundhara (वसुंधरा) — Our Earth. Our Responsibility.
           </div>
-          <div>
-            <h4 className="text-sm text-white mb-3 border-b border-border pb-2">Models</h4>
-            <ul className="list-none p-0 m-0">
-              <li className="text-xs text-text-secondary mb-2">PyTorch</li>
-              <li className="text-xs text-text-secondary mb-2">ResNet50 Backbone</li>
-              <li className="text-xs text-text-secondary mb-2">InfoNCE Loss</li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-sm text-white mb-3 border-b border-border pb-2">Search & Indexing</h4>
-            <ul className="list-none p-0 m-0">
-              <li className="text-xs text-text-secondary mb-2">FAISS</li>
-              <li className="text-xs text-text-secondary mb-2">Cosine Similarity</li>
-              <li className="text-xs text-text-secondary mb-2">L2 Normalization</li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-sm text-white mb-3 border-b border-border pb-2">Data Processing</h4>
-            <ul className="list-none p-0 m-0">
-              <li className="text-xs text-text-secondary mb-2">Rasterio</li>
-              <li className="text-xs text-text-secondary mb-2">NumPy</li>
-              <li className="text-xs text-text-secondary mb-2">PIL</li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-sm text-white mb-3 border-b border-border pb-2">Visualization</h4>
-            <ul className="list-none p-0 m-0">
-              <li className="text-xs text-text-secondary mb-2">Tailwind CSS</li>
-              <li className="text-xs text-text-secondary mb-2">Inline SVG</li>
-              <li className="text-xs text-text-secondary mb-2">React Router</li>
-            </ul>
+          <div className="text-gray-400 text-[12px]">
+            We build technology that respects the planet and helps us understand it better.
           </div>
         </div>
       </div>
 
-      <div className="glass-card mt-4">
-        <h3 className="text-base text-white mb-5">Team ISRO</h3>
-        <div className="grid grid-cols-4 gap-4">
-          <div className="flex items-center gap-3 bg-bg-surface-2 p-3 rounded-sm border border-border">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm bg-accent-violet">AK</div>
-            <div className="flex flex-col">
-              <strong className="text-sm text-white">Aman Kumar</strong>
-              <span className="text-xs text-text-muted">ML Engineer</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 bg-bg-surface-2 p-3 rounded-sm border border-border">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm bg-accent-cyan">RK</div>
-            <div className="flex flex-col">
-              <strong className="text-sm text-white">Ritwik Kumar</strong>
-              <span className="text-xs text-text-muted">Data Scientist</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 bg-bg-surface-2 p-3 rounded-sm border border-border">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm bg-accent-blue">SS</div>
-            <div className="flex flex-col">
-              <strong className="text-sm text-white">Sneha Singh</strong>
-              <span className="text-xs text-text-muted">Frontend Developer</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 bg-bg-surface-2 p-3 rounded-sm border border-border">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm bg-accent-amber">PS</div>
-            <div className="flex flex-col">
-              <strong className="text-sm text-white">Priya Sharma</strong>
-              <span className="text-xs text-text-muted">Backend Developer</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <footer className="flex flex-col items-center gap-2 p-6 border-t border-border mt-4">
-        <div className="flex items-center gap-2 text-xs text-text-secondary">
-          <span>Supported by</span>
-          <strong className="text-white">Indian Space Research Organisation (ISRO)</strong>
-          <span>•</span>
-          <span>Powered by SEN12MS, FAISS & PyTorch</span>
-        </div>
-        <div className="text-xs text-text-muted">
-          © 2024 Team ISRO • SpectraMatch v1.0.0 • All Rights Reserved
-        </div>
-      </footer>
     </div>
   );
 }

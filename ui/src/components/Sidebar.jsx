@@ -29,7 +29,7 @@ export default function Sidebar() {
         <NavLink to="/analytics" className={getNavLinkClass}>Analytics</NavLink>
         <NavLink to="/dataset" className={getNavLinkClass}>Dataset</NavLink>
         <NavLink to="/architecture" className={getNavLinkClass}>Model Architecture</NavLink>
-        <NavLink to="/status" className={getNavLinkClass}>System Status</NavLink>
+
         <NavLink to="/about" className={getNavLinkClass}>About</NavLink>
       </nav>
 

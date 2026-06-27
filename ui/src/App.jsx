@@ -6,7 +6,7 @@ import SearchPage from "./pages/SearchPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import DatasetPage from "./pages/DatasetPage";
 import ArchitecturePage from "./pages/ArchitecturePage";
-import SystemStatusPage from "./pages/SystemStatusPage";
+
 import AboutPage from "./pages/AboutPage";
 
 export default function App() {
@@ -20,7 +20,7 @@ export default function App() {
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/dataset" element={<DatasetPage />} />
           <Route path="/architecture" element={<ArchitecturePage />} />
-          <Route path="/status" element={<SystemStatusPage />} />
+
           <Route path="/about" element={<AboutPage />} />
         </Routes>
       </main>

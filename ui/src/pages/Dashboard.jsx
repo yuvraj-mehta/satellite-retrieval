@@ -105,7 +105,9 @@ export default function Dashboard() {
                     <span className="text-white text-[13px] font-medium">Scene {q.sceneId} / Patch {q.patchId}</span>
                     <div className="w-10 h-10 rounded overflow-hidden border border-white/10 opacity-80 group-hover:opacity-100 transition-opacity">
                       {q.path ? (
-                        <img src={`${API_BASE}/image?path=${encodeURIComponent(q.path)}&modality=${q.queryModality}`} className="w-full h-full object-cover" alt="Thumb"/>
+                        <div className="w-full h-full bg-[#0B0E17] relative">
+                          <img src={`${API_BASE}/image?path=${encodeURIComponent(q.path)}&modality=${q.queryModality}`} className="w-full h-full object-contain" alt="Thumb"/>
+                        </div>
                       ) : (
                         <div className="w-full h-full bg-white/5"></div>
                       )}

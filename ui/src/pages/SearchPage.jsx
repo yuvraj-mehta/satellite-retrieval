@@ -139,6 +139,24 @@ export default function SearchPage() {
     }
   };
 
+  const handleSingleDownload = async (e, r) => {
+    e.stopPropagation();
+    const imgUrl = `${API_BASE}/image?path=${encodeURIComponent(r.path)}&modality=${r.modality}`;
+    try {
+      const resp = await fetch(imgUrl);
+      if (!resp.ok) return;
+      const blob = await resp.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `rank${r.rank}_scene${r.scene_id}_p${r.patch_id}_${r.modality}${r.is_match ? '_MATCH' : ''}.png`;
+      a.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch (_) {
+      // fail silently for individual download
+    }
+  };
+
   const parseFileName = (name) => {
     let sceneId = "Unknown";
     let patchId = "Unknown";
@@ -241,9 +259,9 @@ export default function SearchPage() {
                        <div className="text-[12px] text-text-secondary">Generating preview...</div>
                      </div>
                    ) : previewImage ? (
-                      <img src={`data:image/png;base64,${previewImage}`} className="w-full h-full object-cover" alt="Query" />
+                      <img src={`data:image/png;base64,${previewImage}`} className="w-full h-full object-contain" alt="Query" />
                    ) : queryImage ? (
-                      <img src={`data:image/png;base64,${queryImage}`} className="w-full h-full object-cover" alt="Query" />
+                      <img src={`data:image/png;base64,${queryImage}`} className="w-full h-full object-contain" alt="Query" />
                    ) : (
                       <div className="w-full h-full flex items-center justify-center text-text-muted text-[12px]">Preview unavailable</div>
                    )}
@@ -463,15 +481,23 @@ export default function SearchPage() {
                         <img 
                           src={`${API_BASE}/image?path=${encodeURIComponent(result.path)}&modality=${result.modality}`} 
                           alt={`Result ${idx+1}`} 
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
                         />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                           <span className="text-white text-[11px] font-semibold flex items-center gap-1.5">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
                             Compare
                           </span>
                         </div>
+                        {/* Download Button (Overlay) */}
+                        <button 
+                          onClick={(e) => handleSingleDownload(e, result)}
+                          className="absolute top-1.5 right-1.5 text-white/80 hover:text-white bg-black/50 hover:bg-black/80 backdrop-blur-sm p-1.5 rounded transition-all opacity-0 group-hover:opacity-100 z-20"
+                          title="Download Image"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                        </button>
                       </div>
                       
                       {/* Meta */}
@@ -716,9 +742,9 @@ export default function SearchPage() {
               {/* Base: Query Image */}
               <div className="absolute inset-0">
                 {previewImage
-                  ? <img src={`data:image/png;base64,${previewImage}`} className="absolute inset-0 w-full h-full object-cover" alt="Query" />
+                  ? <img src={`data:image/png;base64,${previewImage}`} className="absolute inset-0 w-full h-full object-contain" alt="Query" />
                   : queryImage
-                    ? <img src={`data:image/png;base64,${queryImage}`} className="absolute inset-0 w-full h-full object-cover" alt="Query" />
+                    ? <img src={`data:image/png;base64,${queryImage}`} className="absolute inset-0 w-full h-full object-contain" alt="Query" />
                     : <div className="w-full h-full bg-bg-surface-2 flex items-center justify-center text-text-muted text-[12px]">Query image unavailable</div>
                 }
                 <div className="absolute bottom-3 left-3 bg-black/70 text-white text-[11px] font-semibold px-2.5 py-1 rounded-md">
@@ -733,7 +759,7 @@ export default function SearchPage() {
               >
                 <img
                   src={`${API_BASE}/image?path=${encodeURIComponent(compareResult.path)}&modality=${compareResult.modality}`}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-contain"
                   alt="Retrieved"
                 />
                 <div className="absolute bottom-3 right-3 bg-black/70 text-white text-[11px] font-semibold px-2.5 py-1 rounded-md">
