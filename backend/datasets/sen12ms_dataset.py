@@ -72,6 +72,7 @@ class SEN12MSDataset(Dataset):
 
     Args:
         root_dir: Path to the sen12ms-subset directory
+        season: Season to load (e.g., 'winter', 'spring', 'summer', 'fall'). Default is 'winter'.
         sar_bands: Which SAR bands to load (None = all 2 bands)
         optical_bands: Which optical band indices to load (0-indexed).
                        Default [3, 7, 10, 11] = B4 (Red), B8 (NIR), B11 (SWIR1), B12 (SWIR2).
@@ -88,12 +89,14 @@ class SEN12MSDataset(Dataset):
     def __init__(
         self,
         root_dir,
+        season="winter",
         sar_bands=None,
         optical_bands=None,
         normalize=True,
         cache_in_memory=True,
     ):
         self.root_dir = Path(root_dir)
+        self.season = season
         self.sar_bands = sar_bands        # None = load all
         # Default: 4-ch (B4, B8, B11, B12) — SAR-complementary multispectral selection
         self.optical_bands = optical_bands if optical_bands is not None else [3, 7, 10, 11]
@@ -102,7 +105,9 @@ class SEN12MSDataset(Dataset):
 
         # Build a lookup: (scene_id, patch_id) -> s2_path
         s2_lookup = {}
-        s2_root = self.root_dir / "ROIs2017_winter_s2"
+        s2_root = self.root_dir / f"ROIs2017_{self.season}_s2"
+        if not s2_root.exists():
+            s2_root = self.root_dir / f"ROIs2017_{self.season}_s2"
         for s2_path in s2_root.rglob("*.tif"):
             parsed = _parse_patch_id(s2_path)
             if parsed is None:
@@ -112,24 +117,27 @@ class SEN12MSDataset(Dataset):
 
         # Match every S1 file to its S2 counterpart
         self.samples = []
-        s1_root = self.root_dir / "ROIs2017_winter_s1"
+        s1_root = self.root_dir / f"ROIs2017_{self.season}_s1"
         missing_pairs = 0
-        for s1_path in sorted(s1_root.rglob("*.tif")):
-            parsed = _parse_patch_id(s1_path)
-            if parsed is None:
-                continue
-            _, scene_id, patch_id = parsed
-            s2_path = s2_lookup.get((scene_id, patch_id))
-            if s2_path is not None:
-                self.samples.append((s1_path, s2_path, scene_id, patch_id))
-            else:
-                missing_pairs += 1
+        if not s1_root.exists():
+            print(f"Warning: {s1_root} does not exist.")
+        else:
+            for s1_path in sorted(s1_root.rglob("*.tif")):
+                parsed = _parse_patch_id(s1_path)
+                if parsed is None:
+                    continue
+                _, scene_id, patch_id = parsed
+                s2_path = s2_lookup.get((scene_id, patch_id))
+                if s2_path is not None:
+                    self.samples.append((s1_path, s2_path, scene_id, patch_id))
+                else:
+                    missing_pairs += 1
 
-        print(f"Found {len(self.samples)} paired samples")
+        print(f"Found {len(self.samples)} paired samples for season '{self.season}'")
         if len(self.samples) == 0:
             raise FileNotFoundError(
-                f"No paired SEN12MS samples found in '{self.root_dir}'. "
-                "Please verify that the directory exists and contains the expected 'ROIs2017_winter_s1' and 'ROIs2017_winter_s2' subdirectories."
+                f"No paired SEN12MS samples found in '{self.root_dir}' for season '{self.season}'. "
+                f"Please verify that the directory exists and contains the expected 'ROIs2017_{self.season}_s1' and 'ROIs2017_{self.season}_s2' subdirectories."
             )
         if missing_pairs > 0:
             print(f"WARNING: {missing_pairs} S1 files had no matching S2 file")

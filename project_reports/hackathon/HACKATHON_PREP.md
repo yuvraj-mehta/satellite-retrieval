@@ -1,5 +1,5 @@
 # 🛰️ Hackathon Preparation Guide
-## SpectraMatch — Cross-Modal Satellite Image Retrieval (Team Cheat Sheet)
+## Project Vasundhra — Cross-Modal Satellite Image Retrieval (Team Cheat Sheet)
 
 > **Purpose**: Everything your team needs to know *on the day of the hackathon*. For deep technical dives into how the system works, see `PROJECT_UNDERSTANDING.md`.
 
@@ -7,7 +7,7 @@
 
 ## 📌 What Are We Building?
 
-**SpectraMatch** is a system that takes a **SAR (radar) satellite image** as a query and finds the **matching optical (camera) image** of the same geographic location from a large archive — and vice versa.
+**Project Vasundhra** is a system that takes a **SAR (radar) satellite image** as a query and finds the **matching optical (camera) image** of the same geographic location from a large archive — and vice versa.
 
 **Why it's hard**: A SAR image and an optical image of the *same place* look completely different. Our trained model learns that they are semantically equivalent.
 
@@ -73,7 +73,7 @@ print('Model loaded OK')
 
 ---
 
-## 🖥️ The SpectraMatch Web Application
+## 🖥️ The Project Vasundhra Web Application
 
 The full-stack application has 7 pages, all accessible from the top navigation bar:
 
@@ -128,7 +128,7 @@ The full-stack application has 7 pages, all accessible from the top navigation b
 **A**: During offline index building, we run every image through the encoder and store the resulting 512-dimensional vector. At query time, FAISS performs a brute-force dot product between the query vector and all stored vectors, returning the top-K highest scores. Because all vectors are L2-normalised, dot product = cosine similarity. With only 2,334 stored vectors, this is instantaneous — no approximation needed.
 
 ### Q: "Tell me about the web application."
-**A**: SpectraMatch is a 7-page React/Vite dashboard backed by a FastAPI server. Every page is production-quality — from the System Status page that shows live hardware info to the Analytics page with performance charts. The Search page shows the full retrieval pipeline in real-time: upload → preview → search → ranked results with comparison modal. The Analysis Insights panel surfaces the latency breakdown (embedding time vs. FAISS time) so judges can see exactly where time is spent.
+**A**: Project Vasundhra is a 7-page React/Vite dashboard backed by a FastAPI server. Every page is production-quality — from the System Status page that shows live hardware info to the Analytics page with performance charts. The Search page shows the full retrieval pipeline in real-time: upload → preview → search → ranked results with comparison modal. The Analysis Insights panel surfaces the latency breakdown (embedding time vs. FAISS time) so judges can see exactly where time is spent.
 
 ---
 
@@ -155,7 +155,7 @@ The full-stack application has 7 pages, all accessible from the top navigation b
 | **VV / VH** | SAR polarisation channels. VV = vertical-vertical, VH = vertical-horizontal. |
 | **NIR** | Near-Infrared (842nm). Captures vegetation. |
 | **SWIR** | Short-Wave Infrared (~1600-2200nm). Captures moisture and water content. |
-| **SpectraMatch** | The name of this project's full-stack application. |
+| **Project Vasundhra** | The name of this project's full-stack application. |
 
 ---
 

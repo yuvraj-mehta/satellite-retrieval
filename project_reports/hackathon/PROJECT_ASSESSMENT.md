@@ -1,5 +1,5 @@
 # Project Assessment Report
-## SpectraMatch — Cross-Modal Satellite Image Retrieval vs. Problem Statement
+## Project Vasundhra — Cross-Modal Satellite Image Retrieval vs. Problem Statement
 
 **Date:** June 27, 2026  
 **Dataset:** SEN12MS (TU Munich) — 180,662 image pairs (Sentinel-1 SAR + Sentinel-2 Multispectral)  
@@ -17,7 +17,7 @@ architecturally state-of-the-art. The prototype achieves near-ceiling F1 scores 
 current gallery. Full-scale training on the complete SEN12MS dataset is the only
 remaining step before submission.
 
-The full-stack application (**SpectraMatch**) is production-quality with 7 pages, a premium dark glassmorphism React UI, FastAPI backend, real-time Analysis Insights, side-by-side comparison modal, and similarity sparkline.
+The full-stack application (**Project Vasundhra**) is production-quality with 7 pages, a premium dark glassmorphism React UI, FastAPI backend, real-time Analysis Insights, side-by-side comparison modal, and similarity sparkline.
 
 ---
 
@@ -37,7 +37,7 @@ The full-stack application (**SpectraMatch**) is production-quality with 7 pages
 | Query from any modality | ✅ Done | Full REST API + React UI |
 | Report retrieval time per query | ✅ Done | Shown in Analysis Insights (ms breakdown) |
 | Multispectral support | ⚠️ Partial | 4-band Sentinel-2 used (B4, B8, B11, B12) |
-| Full-stack demo interface | ✅ Done | 7-page SpectraMatch app (React + FastAPI) |
+| Full-stack demo interface | ✅ Done | 7-page Project Vasundhra app (React + FastAPI) |
 
 ---
 
@@ -227,7 +227,7 @@ comfortably in RAM on any modern machine.
 | GeoRSCLIP | ❌ | ❌ | 1024-d | SAR support, task alignment |
 | DINOv2 | ❌ | ❌ | 1536-d | Domain specificity, speed |
 | SkySense | ✅ | ✅ Partial | 512-d | Fine-tuned on exact data |
-| **SpectraMatch (This Project)** | ✅ | ✅ Full | 512-d (768-d final) | Purpose-built + full UI |
+| **Project Vasundhra (This Project)** | ✅ | ✅ Full | 512-d (768-d final) | Purpose-built + full UI |
 
 The major pretrained models (CLIP, DINOv2, GeoRSCLIP) **cannot perform cross-modal
 SAR↔Optical retrieval** because they were never trained to align SAR and optical
@@ -235,7 +235,7 @@ embeddings into a shared space. This project is architecturally correct for the 
 
 ### vs. Typical Hackathon Submissions
 
-| Criterion | Typical Submission | SpectraMatch |
+| Criterion | Typical Submission | Project Vasundhra |
 |---|---|---|
 | Architecture | ImageNet ResNet + cosine | Sentinel-native MoCo DualEncoder |
 | Loss function | Triplet loss or none | InfoNCE + Hard Negatives |
@@ -261,7 +261,7 @@ embeddings into a shared space. This project is architecturally correct for the 
 
 ## 10. Summary
 
-SpectraMatch is a **technically sound, complete, and production-grade** solution to the
+Project Vasundhra is a **technically sound, complete, and production-grade** solution to the
 cross-modal satellite image retrieval problem. The architecture (TorchGeo weights,
 InfoNCE, FAISS) is state-of-the-art. Every objective in the problem statement is
 implemented. The prototype achieves near-ceiling metrics on its current gallery, and

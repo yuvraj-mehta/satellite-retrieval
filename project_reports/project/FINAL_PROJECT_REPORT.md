@@ -1,6 +1,6 @@
 # Project Report: Cross-Modal Satellite Image Retrieval (SAR ↔ Optical)
 
-**Project Title**: SpectraMatch — Multimodal Remote Sensing Search and Alignment Pipeline  
+**Project Title**: Project Vasundhra — Multimodal Remote Sensing Search and Alignment Pipeline  
 **Version**: 2.0 (Production-Ready Full-Stack)  
 **Authors/Team**: Bharatiya Antariksh Hackathon Submission Team  
 **Date**: June 2026  
@@ -11,7 +11,7 @@
 
 This project presents a state-of-the-art **multimodal remote sensing retrieval system** that aligns Synthetic Aperture Radar (SAR, Sentinel-1) and Optical (Sentinel-2) satellite patches into a shared, search-optimized embedding space. Using a **Contrastive Dual-Encoder architecture** trained with InfoNCE Loss, the system bridges the gap between active microwave sensors (which see through cloud cover and night but are hard for humans to interpret) and passive optical sensors (which provide rich, visual semantic details).
 
-The final application is a full production-grade web application called **SpectraMatch**, exposed as a full-stack web service:
+The final application is a full production-grade web application called **Project Vasundhra**, exposed as a full-stack web service:
 
 1. A high-performance **FastAPI backend** (Python/Uvicorn) hosting the trained dual-encoder and FAISS vector index, performing sub-millisecond retrieval with detailed latency breakdown reporting.
 2. A premium **React (Vite + Tailwind CSS) frontend** with a fully polished dark-mode glassmorphism design, featuring:
@@ -85,7 +85,7 @@ graph TD
 
 ---
 
-## 5. Full-Stack Application Architecture — SpectraMatch
+## 5. Full-Stack Application Architecture — Project Vasundhra
 
 The system is split into two cleanly separated directories (`backend/` and `ui/`) to allow isolated development and deployment.
 
@@ -109,7 +109,7 @@ Exposes the retrieval model over HTTP on port **8000**.
   - SAR: Renders the VV band with robust min-max stretching → grayscale PNG.
   - Optical: Renders B4, B8, and B11 as a false-color composite with individualized band stretching → RGB PNG.
 
-### 5.2 React Vite Frontend — SpectraMatch UI
+### 5.2 React Vite Frontend — Project Vasundhra UI
 
 A fully polished 7-page dashboard using vanilla CSS custom properties with a dark glassmorphism theme, TailwindCSS utility classes, and micro-animations.
 
@@ -204,7 +204,7 @@ During development, several key scientific changes were made to resolve performa
 
 ## 8. Conclusion
 
-This project successfully implements a robust, full-stack, and scientifically sound cross-modal satellite retrieval system named **SpectraMatch**. The system achieves near-optimal alignment between Synthetic Aperture Radar and Optical satellite sensors, providing a highly presentable and fully functioning application ready for hackathon presentation and judges' evaluation.
+This project successfully implements a robust, full-stack, and scientifically sound cross-modal satellite retrieval system named **Project Vasundhra**. The system achieves near-optimal alignment between Synthetic Aperture Radar and Optical satellite sensors, providing a highly presentable and fully functioning application ready for hackathon presentation and judges' evaluation.
 
 The UI has been designed to be immediately intuitive for domain experts and judges alike, exposing all critical information (confidence, latency breakdown, score distribution, ground truth match rank) without any unnecessary interaction steps.
 

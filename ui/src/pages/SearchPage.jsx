@@ -111,7 +111,7 @@ export default function SearchPage() {
       const jsonUrl = URL.createObjectURL(jsonBlob);
       const jsonLink = document.createElement('a');
       jsonLink.href = jsonUrl;
-      jsonLink.download = `spectraMatch_results_${timestamp}.json`;
+      jsonLink.download = `projectVasundhra_results_${timestamp}.json`;
       jsonLink.click();
       URL.revokeObjectURL(jsonUrl);
 

@@ -19,7 +19,7 @@ export default function Sidebar() {
           <path d="M2 17L12 22L22 17" stroke="var(--accent-violet-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           <path d="M2 12L12 17L22 12" stroke="var(--accent-violet-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
-        <div className="text-lg font-bold text-white tracking-wide">SpectraMatch</div>
+        <div className="text-lg font-bold text-white tracking-wide">Project Vasundhra</div>
       </div>
 
       {/* Navigation Links */}

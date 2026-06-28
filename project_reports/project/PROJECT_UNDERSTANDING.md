@@ -1,5 +1,5 @@
 # 🛰️ Project Understanding Guide
-## Cross-Modal Satellite Image Retrieval — Deep Technical Reference
+## Project Vasundhra - Cross-Modal Satellite Image Retrieval — Deep Technical Reference
 
 > **Purpose**: Thorough understanding of every technical component — dataset, architecture, training, evaluation, and codebase. For hackathon-day Q&A and quick commands, see `HACKATHON_PREP.md`.
 
