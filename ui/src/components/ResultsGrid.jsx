@@ -8,6 +8,7 @@ export default function ResultsGrid({
   queryModality,
   targetModality,
   retrievalMs,
+  topK,
 }) {
   if (!results || results.length === 0) return null;
 
@@ -44,23 +45,62 @@ export default function ResultsGrid({
 
         <div className="grid-arrow">→</div>
 
-        <div className="results-col">
-          <p className="col-label">Top-5 Retrievals ({targetModality.toUpperCase()})</p>
-          <div className="tiles-row">
-            {results.map((r) => (
-              <ImageTile
-                key={r.rank}
-                image={r.image}
-                title={`Scene ${r.scene_id} · Patch ${r.patch_id}`}
-                subtitle={`Rank ${r.rank}`}
-                score={r.score}
-                badge={r.is_match ? "✓ MATCH" : `#${r.rank}`}
-                badgeVariant={r.is_match ? "match" : "rank"}
-                delay={r.rank * 0.08}
-              />
-            ))}
+        {targetModality === "both" ? (
+          <div className="results-split-container">
+            <div className="results-col">
+              <p className="col-label">Top-{topK} Retrievals (Optical)</p>
+              <div className="tiles-row">
+                {results.filter(r => r.modality.includes("optical")).map((r, i) => (
+                  <ImageTile
+                    key={r.rank}
+                    image={r.image}
+                    title={`Scene ${r.scene_id} · Patch ${r.patch_id}`}
+                    subtitle={`Overall Rank ${r.rank}`}
+                    score={r.score}
+                    badge={r.is_match ? "✓ MATCH" : `#${r.rank}`}
+                    badgeVariant={r.is_match ? "match" : "rank"}
+                    delay={i * 0.08}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="results-col">
+              <p className="col-label">Top-{topK} Retrievals (SAR)</p>
+              <div className="tiles-row">
+                {results.filter(r => r.modality === "sar").map((r, i) => (
+                  <ImageTile
+                    key={r.rank}
+                    image={r.image}
+                    title={`Scene ${r.scene_id} · Patch ${r.patch_id}`}
+                    subtitle={`Overall Rank ${r.rank}`}
+                    score={r.score}
+                    badge={r.is_match ? "✓ MATCH" : `#${r.rank}`}
+                    badgeVariant={r.is_match ? "match" : "rank"}
+                    delay={i * 0.08}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="results-col">
+            <p className="col-label">Top-{topK || results.length} Retrievals ({targetModality.toUpperCase()})</p>
+            <div className="tiles-row">
+              {results.map((r, i) => (
+                <ImageTile
+                  key={r.rank}
+                  image={r.image}
+                  title={`Scene ${r.scene_id} · Patch ${r.patch_id}`}
+                  subtitle={`Rank ${r.rank}`}
+                  score={r.score}
+                  badge={r.is_match ? "✓ MATCH" : `#${r.rank}`}
+                  badgeVariant={r.is_match ? "match" : "rank"}
+                  delay={i * 0.08}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

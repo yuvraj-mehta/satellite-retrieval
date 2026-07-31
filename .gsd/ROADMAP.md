@@ -1,6 +1,6 @@
 # ROADMAP.md
 
-> **Current Phase**: Phase 9 — Evaluation Dashboard UI
+> **Current Phase**: Complete 🎉
 > **Milestone**: v1.3 — Hackathon Finalist Polish
 
 ---
@@ -147,7 +147,7 @@
 ---
 
 ### Phase 9: Evaluation Dashboard UI
-**Status**: 🔄 In Progress
+**Status**: ✅ Complete
 **Objective**: Surface the existing `evaluation_results.json` benchmark data directly in the React UI so judges see empirical F1@5, F1@10, MRR, and latency metrics front-and-center instead of buried in backend JSON files. Add a `/benchmarks` API endpoint and a `BenchmarkDashboard` tab component with inline SVG charts and a glassmorphism aesthetic matching the existing UI.
 
 **Key Tasks**:
@@ -163,7 +163,7 @@
 ---
 
 ### Phase 10: Semantic Evaluation (Land Cover Labels)
-**Status**: ⬜ Planned
+**Status**: ✅ Complete
 **Objective**: Replace geographic-exact ground truth with semantic class ground truth using the SEN12MS IGBP Land Cover labels that already ship in `backend/SEN12MS-master/labels/`. Two patches are now "relevant" if they share the same dominant LC class (e.g., both Evergreen Broadleaf Forest), regardless of GPS location. This directly matches the problem statement wording: "based on semantic class". Expected to raise cross-modal F1 scores 5–10×.
 
 **Key Tasks**:
@@ -179,7 +179,7 @@
 ---
 
 ### Phase 11: Three-Modality Support (SAR + Optical RGB + Multispectral)
-**Status**: ⬜ Planned
+**Status**: ✅ Complete
 **Objective**: Demonstrate the architecture scales beyond 2 modalities by splitting Sentinel-2 into a distinct RGB Optical modality (B2, B3, B4 — 3-channel true colour) and the existing Multispectral modality (B4, B8, B11, B12 — 4-channel). The RGB encoder reuses the existing `opt_backbone` + `opt_projector` with a band-selection adapter so no retraining is required. Exposes `optical_rgb` as a valid `query_modality` in the API and UI dropdown.
 
 **Key Tasks**:
@@ -195,7 +195,7 @@
 ---
 
 ### Phase 12: Hard Negative Mining
-**Status**: ⬜ Planned
+**Status**: ✅ Complete
 **Objective**: Upgrade the training loop so the InfoNCE loss is computed against hard negatives — patches from different geographic locations that share the same LC class (e.g., Forest A vs Forest B). This forces the model to learn a discriminative embedding space within semantic classes, not just across obviously different biomes. Requires Phase 10 LC labels as a prerequisite. Requires a full model retrain after implementation.
 
 **Key Tasks**:
@@ -207,3 +207,8 @@
 **Plans**: `12/1-PLAN.md` (dataset + loss) → `12/2-PLAN.md` (training loop)
 
 **Requirements**: SPEC Goals 3, 4
+
+### Phase 13: SpectraMatch UI Rebuild
+**Status**: ✅ Complete
+**Objective**: Full redesign of the React frontend to match the SpectraMatch reference design (9 pages). Replaces tab-based layout with sidebar navigation. New pages: Dashboard, Search/Query, Results, Analytics, Dataset, Model Architecture, System Status, About. New backend endpoints: GET /dataset/info, GET /system/status. Extended GET /benchmarks with latency_breakdown. Extended POST /query response with per-stage latency timing.
+

@@ -13,7 +13,7 @@ if str(backend_dir) not in sys.path:
 from models.dual_encoder import DualEncoder
 from models.encoder import get_device
 from retrieval.faiss_utils import FAISSRetriever
-from datasets.sen12ms_dataset import SAR_MEAN, SAR_STD, OPT_MEAN, OPT_STD
+from datasets.sen12ms_dataset import SAR_MEAN, SAR_STD, OPT_MEAN, OPT_STD, OPT_RGB_MEAN, OPT_RGB_STD
 
 
 def load_tif(path: Path, bands: List[int] = None, normalize: bool = True, modality: str = "sar") -> np.ndarray:
@@ -29,6 +29,10 @@ def load_tif(path: Path, bands: List[int] = None, normalize: bool = True, modali
             # Z-score per band using empirical dataset stats
             for i in range(min(data.shape[0], len(SAR_MEAN))):
                 data[i] = (data[i] - SAR_MEAN[i]) / (SAR_STD[i] + 1e-6)
+        elif modality == "optical_rgb":
+            # Z-score per band using empirical dataset stats for RGB
+            for i in range(min(data.shape[0], len(OPT_RGB_MEAN))):
+                data[i] = (data[i] - OPT_RGB_MEAN[i]) / (OPT_RGB_STD[i] + 1e-6)
         else:
             # Z-score per band using empirical dataset stats
             for i in range(min(data.shape[0], len(OPT_MEAN))):
@@ -54,7 +58,7 @@ class RetrieverService:
         print(f"[RetrieverService] Loading checkpoint from: {ckpt_path}")
         ckpt = torch.load(ckpt_path, map_location=self.device)
         emb_dim = ckpt.get("args", {}).get("embedding_dim", 512)
-        
+
         self.model = DualEncoder(embedding_dim=emb_dim, pretrained=False).to(self.device)
         self.model.load_state_dict(ckpt["model_state_dict"])
         self.model.eval()
@@ -75,7 +79,7 @@ class RetrieverService:
         print(f"[RetrieverService] FAISS index loaded successfully with {self.retriever.ntotal} items")
 
     @classmethod
-    def load(cls, checkpoint_path: str = "outputs/checkpoints/best_model.pt", index_dir: str = "outputs/index_trained"):
+    def load(cls, checkpoint_path: str = "outputs/checkpoints/best_model.pt", index_dir: str = "outputs/index"):
         if cls._instance is None:
             cls._instance = cls(checkpoint_path, index_dir)
         return cls._instance
@@ -91,6 +95,8 @@ class RetrieverService:
         with torch.no_grad():
             if modality == "sar":
                 emb = self.model.encode_sar(tensor)
+            elif modality == "optical_rgb":
+                emb = self.model.encode_optical_rgb(tensor)
             else:
                 emb = self.model.encode_optical(tensor)
         return emb.cpu().float().numpy()
@@ -99,11 +105,27 @@ class RetrieverService:
         # Search for k + 20 results to make sure we filter enough matches for the target modality
         raw_results = self.retriever.search(query_emb, k=k + 20)
         
-        # Filter to target modality
         filtered = []
+        target_mod = "optical" if target_modality == "optical_rgb" else target_modality
+        
+        sar_count = 0
+        opt_count = 0
         for r in raw_results[0]:
-            if r["modality"] == target_modality:
-                filtered.append(r)
-                if len(filtered) == k:
+            is_sar = r["modality"] == "sar"
+            is_opt = r["modality"] == "optical"
+            
+            if target_modality == "both":
+                if is_sar and sar_count < k:
+                    filtered.append(r)
+                    sar_count += 1
+                elif is_opt and opt_count < k:
+                    filtered.append(r)
+                    opt_count += 1
+                if sar_count == k and opt_count == k:
                     break
+            else:
+                if r["modality"] == target_mod:
+                    filtered.append(r)
+                    if len(filtered) == k:
+                        break
         return filtered

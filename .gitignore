@@ -23,3 +23,8 @@ ui/dist/
 ui/dist-ssr/
 ui/*.local
 ui/.eslintcache
+# Ignore large model outputs
+backend/outputs/
+
+
+detailed_docs/

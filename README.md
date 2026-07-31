@@ -1,4 +1,4 @@
-# Cross-Modal Satellite Image Retrieval
+# Project Vasundhra - Cross-Modal Satellite Image Retrieval
 
 This repository contains an end-to-end cross-modal satellite image retrieval system built for the **ISRO/Bharatiya Antariksh Hackathon**.
 

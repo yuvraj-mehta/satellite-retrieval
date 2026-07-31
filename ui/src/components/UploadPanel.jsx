@@ -15,6 +15,29 @@ export default function UploadPanel({
   const [uploadError, setUploadError] = useState("");
   const fileInputRef = useRef(null);
 
+  const isOptical = (m) => m === "optical" || m === "optical_rgb";
+  const isSar = (m) => m === "sar";
+
+  const handleLoadSample = async () => {
+    try {
+      setUploadError("");
+      const isSarQuery = queryModality === "sar";
+      const sampleUrl = isSarQuery ? "/sample_sar.tif" : "/sample_optical.tif";
+      const sampleName = isSarQuery ? "sample_sar.tif" : "sample_optical.tif";
+      
+      const response = await fetch(sampleUrl);
+      if (!response.ok) {
+        throw new Error("Failed to fetch sample file.");
+      }
+      const blob = await response.blob();
+      const sampleFile = new File([blob], sampleName, { type: "image/tiff" });
+      validateAndSetFile(sampleFile);
+    } catch (err) {
+      setUploadError("Failed to load sample file. Verify public assets are present.");
+      console.error(err);
+    }
+  };
+
   const validateAndSetFile = (selectedFile) => {
     setUploadError("");
     if (!selectedFile) return;
@@ -60,14 +83,13 @@ export default function UploadPanel({
 
   const handleQueryModalityChange = (e) => {
     const newQueryMod = e.target.value;
-    const newTargetMod = newQueryMod === "sar" ? "optical" : "sar";
-    onModalityChange(newQueryMod, newTargetMod);
+    setFile(null); // Clear file on query modality change
+    onModalityChange(newQueryMod, targetModality);
   };
 
   const handleTargetModalityChange = (e) => {
     const newTargetMod = e.target.value;
-    const newQueryMod = newTargetMod === "sar" ? "optical" : "sar";
-    onModalityChange(newQueryMod, newTargetMod);
+    onModalityChange(queryModality, newTargetMod);
   };
 
   const handleSubmit = (e) => {
@@ -140,6 +162,7 @@ export default function UploadPanel({
           >
             <option value="sar">Sentinel-1 (SAR)</option>
             <option value="optical">Sentinel-2 (Optical)</option>
+            <option value="optical_rgb">Optical RGB (Sentinel-2 True Colour)</option>
           </select>
         </div>
 
@@ -151,37 +174,57 @@ export default function UploadPanel({
             className="modality-select"
           >
             <option value="optical">Sentinel-2 (Optical)</option>
+            <option value="optical_rgb">Optical RGB (Sentinel-2 True Colour)</option>
             <option value="sar">Sentinel-1 (SAR)</option>
+            <option value="both">Both (SAR & Optical)</option>
           </select>
         </div>
 
-        <div className="modality-field slider-field">
-          <label>Top-K Retrievals: {topK}</label>
-          <input 
-            type="range" 
-            min="1" 
-            max="15" 
-            value={topK} 
-            onChange={(e) => onTopKChange(parseInt(e.target.value))}
-            className="k-slider"
-          />
+        <div className="modality-field">
+          <label>Number of Retrievals</label>
+          <div className="k-toggle-group">
+            <button
+              type="button"
+              className={`k-toggle-btn ${topK === 5 ? "active" : ""}`}
+              onClick={() => onTopKChange(5)}
+            >
+              Top-5
+            </button>
+            <button
+              type="button"
+              className={`k-toggle-btn ${topK === 10 ? "active" : ""}`}
+              onClick={() => onTopKChange(10)}
+            >
+              Top-10
+            </button>
+          </div>
         </div>
       </div>
 
-      <button
-        type="submit"
-        className="btn-primary search-submit-btn"
-        disabled={!file || loading}
-      >
-        {loading ? (
-          <>
-            <span className="spinner" />
-            <span>Projecting into Shared Embedding Space...</span>
-          </>
-        ) : (
-          <span>Run Cross-Modal Retrieval</span>
-        )}
-      </button>
+      <div className="action-buttons-row">
+        <button
+          type="button"
+          className="btn-secondary sample-btn"
+          onClick={handleLoadSample}
+          disabled={loading}
+        >
+          💡 Load Demo Sample
+        </button>
+        <button
+          type="submit"
+          className="btn-primary search-submit-btn"
+          disabled={!file || loading}
+        >
+          {loading ? (
+            <>
+              <span className="spinner" />
+              <span>Projecting into Shared Embedding Space...</span>
+            </>
+          ) : (
+            <span>Run Cross-Modal Retrieval</span>
+          )}
+        </button>
+      </div>
     </form>
   );
 }

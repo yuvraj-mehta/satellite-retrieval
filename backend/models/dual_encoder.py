@@ -131,6 +131,28 @@ class DualEncoder(nn.Module):
         feat = self.opt_backbone(x)      # (B, 2048)
         return self.opt_projector(feat)  # (B, embedding_dim)
 
+    def encode_optical_rgb(self, x):
+        """
+        Encode 3-channel true-colour RGB optical images (B4, B3, B2).
+
+        Reuses opt_backbone + opt_projector (no retraining required).
+        If opt_backbone expects 4 channels (as in the torchgeo native path),
+        we pad the input with a zero channel to match the expected shape of the
+        1x1 conv adapter.
+
+        Args:
+            x: (B, 3, H, W) tensor, Z-score normalized
+        Returns:
+            (B, embedding_dim) L2-normalized embedding
+        """
+        if self.opt_backbone.in_channels == 4:
+            # Pad 3-ch input with a zero channel to make it 4-ch
+            zeros = torch.zeros(x.shape[0], 1, x.shape[2], x.shape[3], device=x.device, dtype=x.dtype)
+            x = torch.cat([x, zeros], dim=1)
+        
+        feat = self.opt_backbone(x)      # adapter projects to backbone channels
+        return self.opt_projector(feat)
+
     def forward(self, sar, optical):
         """
         Forward pass for training.
@@ -181,6 +203,53 @@ class InfoNCELoss(nn.Module):
         return (loss_sar_to_opt + loss_opt_to_sar) / 2
 
 
+class InfoNCEWithHardNegs(nn.Module):
+    """
+    InfoNCE loss augmented with hard negatives.
+
+    Standard InfoNCE uses random in-batch negatives. This variant mixes
+    hard negatives (same LC class, different location) into the denominator,
+    forcing the model to discriminate within semantic classes.
+
+    Hard negative strategy: for each anchor SAR_i, we add its hard_neg_sar_i
+    to the denominator when computing the OPT→SAR similarity. The hard negative
+    embeddings do NOT serve as positives.
+
+    Args:
+        temperature: softmax temperature (default 0.1)
+        hard_neg_weight: relative weight of hard negative logits (default 1.0)
+    """
+
+    def __init__(self, temperature: float = 0.1, hard_neg_weight: float = 1.0):
+        super().__init__()
+        self.temperature = temperature
+        self.hard_neg_weight = hard_neg_weight
+
+    def forward(
+        self,
+        sar_emb: torch.Tensor,          # (B, D) anchor SAR
+        opt_emb: torch.Tensor,          # (B, D) positive optical
+        hard_neg_sar_emb: torch.Tensor, # (B, D) hard negative SAR
+    ) -> torch.Tensor:
+        B = sar_emb.size(0)
+        device = sar_emb.device
+        labels = torch.arange(B, device=device)
+
+        # Standard similarity matrix (B, B)
+        sim = torch.matmul(sar_emb, opt_emb.T) / self.temperature
+        loss_sar_to_opt = F.cross_entropy(sim, labels)
+
+        # Augmented OPT→SAR: add hard neg SAR embeddings as extra negatives
+        # Gallery for OPT query: [sar_emb (B,D) | hard_neg_sar_emb (B,D)] → (2B, D)
+        gallery = torch.cat([sar_emb, hard_neg_sar_emb * self.hard_neg_weight], dim=0)
+        # Similarity: (B, 2B)
+        sim_aug = torch.matmul(opt_emb, gallery.T) / self.temperature
+        # Positive indices remain 0..B-1 (same as standard InfoNCE)
+        loss_opt_to_sar_aug = F.cross_entropy(sim_aug, labels)
+
+        return (loss_sar_to_opt + loss_opt_to_sar_aug) / 2
+
+
 if __name__ == "__main__":
     import torch
     from models.encoder import get_device
@@ -192,7 +261,8 @@ if __name__ == "__main__":
     model = DualEncoder(embedding_dim=512, use_torchgeo=True).to(device)
 
     sar = torch.randn(4, 2, 64, 64).to(device)
-    opt = torch.randn(4, 3, 64, 64).to(device)
+    opt_channels = model.opt_backbone.in_channels
+    opt = torch.randn(4, opt_channels, 64, 64).to(device)
 
     sar_emb, opt_emb = model(sar, opt)
     print(f"\nSAR emb shape:  {sar_emb.shape}")     # (4, 512)
@@ -211,3 +281,14 @@ if __name__ == "__main__":
     print(f"InfoNCE loss: {loss.item():.4f}")
     assert not torch.isnan(loss), "Loss is NaN!"
     print("PASS: DualEncoder + InfoNCELoss working")
+
+    # Verify InfoNCEWithHardNegs
+    criterion_hn = InfoNCEWithHardNegs(temperature=0.1, hard_neg_weight=1.0)
+    hn_sar = torch.randn(4, 512).to(device)
+    hn_sar = F.normalize(hn_sar, p=2, dim=1)
+    loss_hn = criterion_hn(sar_emb, opt_emb, hn_sar)
+    print(f"InfoNCEWithHardNegs loss: {loss_hn.item():.4f}")
+    assert not torch.isnan(loss_hn), "Loss is NaN!"
+    assert loss_hn.item() > 0
+    print("PASS: InfoNCEWithHardNegs working")
+

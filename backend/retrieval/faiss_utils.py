@@ -6,6 +6,10 @@ which is equivalent to cosine similarity.
 """
 import numpy as np
 import faiss
+
+# Prevent FAISS segmentation fault on Apple Silicon by limiting OpenMP threads
+faiss.omp_set_num_threads(1)
+
 import pickle
 from pathlib import Path
 from typing import List, Dict, Any, Tuple

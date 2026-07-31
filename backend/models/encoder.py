@@ -174,7 +174,13 @@ class ResNet50Encoder(nn.Module):
 
 
 def get_device():
-    """Return best available device: MPS > CUDA > CPU."""
+    """Return best available device: TPU (XLA) > MPS > CUDA > CPU."""
+    try:
+        import torch_xla.core.xla_model as xm
+        return xm.xla_device()
+    except ImportError:
+        pass
+
     if torch.backends.mps.is_available():
         return torch.device("mps")
     elif torch.cuda.is_available():

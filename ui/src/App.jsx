@@ -1,76 +1,29 @@
-import React, { useState } from "react";
-import { useRetrieval } from "./hooks/useRetrieval";
-import StatusBar from "./components/StatusBar";
-import UploadPanel from "./components/UploadPanel";
-import ResultsGrid from "./components/ResultsGrid";
-import LoadingOverlay from "./components/LoadingOverlay";
-import ArchitectureDiagram from "./components/ArchitectureDiagram";
-import ErrorBanner from "./components/ErrorBanner";
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import Sidebar from "./components/Sidebar";
+import Dashboard from "./pages/Dashboard";
+import SearchPage from "./pages/SearchPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
+import DatasetPage from "./pages/DatasetPage";
+import ArchitecturePage from "./pages/ArchitecturePage";
+
+import AboutPage from "./pages/AboutPage";
 
 export default function App() {
-  const [queryModality, setQueryModality] = useState("sar");
-  const [targetModality, setTargetModality] = useState("optical");
-  const [topK, setTopK] = useState(5);
-
-  const {
-    results,
-    queryImage,
-    retrievalMs,
-    loading,
-    error,
-    search,
-  } = useRetrieval();
-
-  const handleSearch = (file, qm, tm) => {
-    search(file, qm, tm, topK);
-  };
-
   return (
-    <div className="app-container">
-      <header className="app-header">
-        <div className="header-badge">ISRO / BHARATIYA ANTARIKSH HACKATHON</div>
-        <h1>
-          Cross-Modal <span className="gradient-text">Satellite</span> Retrieval
-        </h1>
-        <p>Advanced Multi-Sensor Remote Sensing Platform</p>
-      </header>
+    <div className="flex flex-col min-h-screen">
+      <Sidebar />
+      <main className="flex-1 mt-navbar-height p-6">
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/dataset" element={<DatasetPage />} />
+          <Route path="/architecture" element={<ArchitecturePage />} />
 
-      <StatusBar 
-        retrievalMs={retrievalMs} 
-        queryModality={queryModality} 
-        targetModality={targetModality} 
-        topK={topK} 
-        hasResults={results.length > 0} 
-      />
-
-      <ArchitectureDiagram />
-
-      <UploadPanel
-        onSearch={handleSearch}
-        loading={loading}
-        queryModality={queryModality}
-        targetModality={targetModality}
-        topK={topK}
-        onModalityChange={(qm, tm) => {
-          setQueryModality(qm);
-          setTargetModality(tm);
-        }}
-        onTopKChange={(k) => setTopK(k)}
-      />
-
-      {loading && <LoadingOverlay />}
-      <ErrorBanner error={error} />
-
-      {results.length > 0 && !loading && (
-        <ResultsGrid
-          queryImage={queryImage}
-          results={results}
-          queryModality={queryModality}
-          targetModality={targetModality}
-          retrievalMs={retrievalMs}
-        />
-      )}
+          <Route path="/about" element={<AboutPage />} />
+        </Routes>
+      </main>
     </div>
   );
 }
-

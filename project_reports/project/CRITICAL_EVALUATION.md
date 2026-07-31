@@ -1,5 +1,5 @@
 # CRITICAL EVALUATION REPORT
-## Cross-Modal Satellite Image Retrieval — Honest, Brutal, and Fair Assessment
+## Project Vasundhra - Cross-Modal Satellite Image Retrieval — Honest, Brutal, and Fair Assessment
 
 > **Written By**: Two independent evaluator personas  
 > **Perspective A**: Academic ML Researcher (questions rigour, methodology, novelty)  
