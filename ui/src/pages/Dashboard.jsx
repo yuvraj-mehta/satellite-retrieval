@@ -232,17 +232,17 @@ export default function Dashboard() {
           
           <div className="flex flex-col gap-4 flex-1 justify-center px-2">
             {[
-              { label: 'Backend API', status: 'Online', color: 'accent-green' },
-              { label: 'ML Model (ResNet50)', status: 'Loaded', color: 'accent-green' },
-              { label: 'FAISS Index', status: 'Ready', color: 'accent-cyan' },
-              { label: 'GPU / MPS', status: 'Active', color: 'accent-cyan' },
-              { label: 'Storage', status: 'Healthy', color: 'accent-cyan' },
+              { label: 'Backend API', status: 'Online', textClass: 'text-accent-green', bgClass: 'bg-accent-green', shadowClass: 'shadow-[0_0_6px_rgba(16,185,129,0.8)]' },
+              { label: 'ML Model (ResNet50)', status: 'Loaded', textClass: 'text-accent-green', bgClass: 'bg-accent-green', shadowClass: 'shadow-[0_0_6px_rgba(16,185,129,0.8)]' },
+              { label: 'FAISS Index', status: 'Ready', textClass: 'text-accent-cyan', bgClass: 'bg-accent-cyan', shadowClass: 'shadow-[0_0_6px_rgba(0,212,170,0.8)]' },
+              { label: 'GPU / MPS', status: 'Active', textClass: 'text-accent-cyan', bgClass: 'bg-accent-cyan', shadowClass: 'shadow-[0_0_6px_rgba(0,212,170,0.8)]' },
+              { label: 'Storage', status: 'Healthy', textClass: 'text-accent-cyan', bgClass: 'bg-accent-cyan', shadowClass: 'shadow-[0_0_6px_rgba(0,212,170,0.8)]' },
             ].map((item, idx) => (
               <div key={idx} className="flex justify-between items-center text-[13px]">
                 <span className="text-text-secondary">{item.label}</span>
                 <div className="flex items-center gap-2">
-                  <span className={`text-${item.color}`}>{item.status}</span>
-                  <span className={`w-2 h-2 rounded-full bg-${item.color} shadow-[0_0_6px_rgba(var(--${item.color}),0.8)]`}></span>
+                  <span className={item.textClass}>{item.status}</span>
+                  <span className={`w-2 h-2 rounded-full ${item.bgClass} ${item.shadowClass}`}></span>
                 </div>
               </div>
             ))}
